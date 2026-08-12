@@ -819,7 +819,16 @@ async function startServer() {
   });
 
   // 1. Resume Parsing
-  app.post('/api/resume/parse', upload.any(), async (req, res) => {
+  const safeUploadMiddleware = (req: express.Request, res: express.Response, next: express.NextFunction) => {
+    upload.any()(req, res, (err: any) => {
+      if (err) {
+        console.warn('[Multer Notice] Handled multipart field notice:', err?.message || err);
+      }
+      next();
+    });
+  };
+
+  app.post('/api/resume/parse', safeUploadMiddleware, async (req, res) => {
     try {
       let resumeText = req.body.resumeText || req.body.rawText || '';
 

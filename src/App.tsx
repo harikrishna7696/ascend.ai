@@ -126,7 +126,6 @@ export function App() {
       const formData = new FormData();
       if (file) {
         formData.append('resumeFile', file);
-        formData.append('resume', file);
       }
       if (rawText) formData.append('rawText', rawText);
 
