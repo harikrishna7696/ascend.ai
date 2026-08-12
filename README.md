@@ -161,17 +161,48 @@ npm run start
 
 ---
 
-## 🛠️ Running Local Open-Source Models via Ollama
+## 🛠️ Running Local Open-Source Models (Ollama / Qwen 2.5 Coder)
 
-To run fully local AI models on your machine without external API calls:
+To run **Qwen 2.5 Coder** or **Llama 3** locally on your machine without external API costs:
 
-1. Install [Ollama](https://ollama.com/).
-2. Pull your desired model:
+### 1. Using Ollama
+1. Download and install [Ollama](https://ollama.com/).
+2. Pull the Qwen Coder model in your terminal:
    ```bash
-   ollama pull llama3:latest
+   ollama pull qwen2.5-coder:latest
+   # Or for smaller/larger variants:
+   # ollama pull qwen2.5-coder:7b
+   # ollama pull qwen2.5-coder:14b
+   # ollama pull qwen2.5-coder:32b
    ```
-3. Ensure Ollama is running (`ollama serve`).
-4. In AETHER's header dropdown or Settings, select **Ollama Local (Llama 3)**.
+3. Start the Ollama local server:
+   ```bash
+   ollama serve
+   ```
+4. In AETHER:
+   - Click the **Model Selector Dropdown** in the top header.
+   - Select **Ollama Local (Qwen 2.5 Coder)**.
+
+### 2. Custom Local Config in `models.yaml` or Settings
+You can also edit `models.yaml` (or use the **YAML Config Editor** in the Settings tab):
+
+```yaml
+  - id: "ollama-local-qwen-coder"
+    name: "Ollama Local (Qwen 2.5 Coder)"
+    provider: "Local Machine / Ollama"
+    type: "local_ollama"
+    description: "Local Qwen 2.5 Coder model running via Ollama at localhost:11434."
+    baseUrl: "http://localhost:11434/v1"
+    endpointType: "openai_compatible"
+    apiKeyEnvVar: "LOCAL_OLLAMA_KEY"
+    modelName: "qwen2.5-coder:latest"
+```
+
+### 3. Using LM Studio / vLLM / LocalAI
+If running Qwen Coder via LM Studio or vLLM:
+1. Start the local server at your port (e.g. `http://localhost:1234/v1`).
+2. Update `baseUrl: "http://localhost:1234/v1"` in `models.yaml`.
+3. Set `modelName` to your loaded model identifier.
 
 ---
 

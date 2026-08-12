@@ -1,76 +1,80 @@
-# Open-Source & Proprietary AI Model Registry
-active_model: "llama-3.3-70b"
-
+active_model: ollama-local-qwen-coder
 default_temperature: 0.7
 max_tokens: 4096
-
 models:
-  - id: "llama-3.3-70b"
-    name: "Llama 3.3 70B Instruct"
-    provider: "Meta (Open-Source)"
-    type: "opensource"
-    description: "Meta's flagship open-source 70B parameter model. High reasoning & technical speed."
-    baseUrl: "https://api.together.xyz/v1"
-    endpointType: "openai_compatible"
-    apiKeyEnvVar: "TOGETHER_API_KEY"
-    modelName: "meta-llama/Llama-3.3-70B-Instruct-Turbo"
-
-  - id: "deepseek-r1"
-    name: "DeepSeek R1 Reasoning"
-    provider: "DeepSeek (Open-Source)"
-    type: "opensource"
-    description: "Open-weights reasoning model with state-of-the-art chain-of-thought capabilities."
-    baseUrl: "https://api.deepseek.com/v1"
-    endpointType: "openai_compatible"
-    apiKeyEnvVar: "DEEPSEEK_API_KEY"
-    modelName: "deepseek-reasoner"
-
-  - id: "qwen-2.5-coder-32b"
-    name: "Qwen 2.5 Coder 32B"
-    provider: "Alibaba Cloud (Open-Source)"
-    type: "opensource"
-    description: "Specialized open-source code & technical architecture generation model."
-    baseUrl: "https://api.together.xyz/v1"
-    endpointType: "openai_compatible"
-    apiKeyEnvVar: "TOGETHER_API_KEY"
-    modelName: "Qwen/Qwen2.5-Coder-32B-Instruct"
-
-  - id: "mistral-large-2"
-    name: "Mistral Large 2"
-    provider: "Mistral AI (Open-Source / Weights)"
-    type: "opensource"
-    description: "Flagship 123B open-weights multilingual code and system architecture model."
-    baseUrl: "https://api.mistral.ai/v1"
-    endpointType: "openai_compatible"
-    apiKeyEnvVar: "MISTRAL_API_KEY"
-    modelName: "mistral-large-latest"
-
-  - id: "ollama-local-llama3"
-    name: "Ollama Local (Llama 3)"
-    provider: "Local Machine / vLLM"
-    type: "local_ollama"
-    description: "Self-hosted local open-source server running via Ollama or vLLM at localhost:11434."
-    baseUrl: "http://localhost:11434/v1"
-    endpointType: "openai_compatible"
-    apiKeyEnvVar: "LOCAL_OLLAMA_KEY"
-    modelName: "llama3:latest"
-
-  - id: "gemini-3.6-flash"
-    name: "Gemini 3.6 Flash"
-    provider: "Google AI Studio"
-    type: "proprietary"
-    description: "Google DeepMind high-speed multimodal reasoning model."
-    baseUrl: "https://generativelanguage.googleapis.com"
-    endpointType: "gemini"
-    apiKeyEnvVar: "GEMINI_API_KEY"
-    modelName: "gemini-3.6-flash"
-
-  - id: "aether-local-engine"
-    name: "Aether Native Offline Engine"
-    provider: "Built-in Deterministic AI"
-    type: "offline"
-    description: "Zero-latency offline career intelligence fallback engine running directly in WebAssembly."
-    baseUrl: "internal"
-    endpointType: "offline"
+  - id: llama-3.3-70b
+    name: Llama 3.3 70B Instruct
+    provider: Meta (Open-Source)
+    type: opensource
+    description: Meta's flagship open-source 70B parameter model. High reasoning &
+      technical speed.
+    baseUrl: https://api.together.xyz/v1
+    endpointType: openai_compatible
+    apiKeyEnvVar: TOGETHER_API_KEY
+    modelName: meta-llama/Llama-3.3-70B-Instruct-Turbo
+  - id: deepseek-r1
+    name: DeepSeek R1 Reasoning
+    provider: DeepSeek (Open-Source)
+    type: opensource
+    description: Open-weights reasoning model with state-of-the-art chain-of-thought
+      capabilities.
+    baseUrl: https://api.deepseek.com/v1
+    endpointType: openai_compatible
+    apiKeyEnvVar: DEEPSEEK_API_KEY
+    modelName: deepseek-reasoner
+  - id: qwen-2.5-coder-32b
+    name: Qwen 2.5 Coder 32B
+    provider: Alibaba Cloud (Open-Source)
+    type: opensource
+    description: Specialized open-source code & technical architecture generation model.
+    baseUrl: https://api.together.xyz/v1
+    endpointType: openai_compatible
+    apiKeyEnvVar: TOGETHER_API_KEY
+    modelName: Qwen/Qwen2.5-Coder-32B-Instruct
+  - id: mistral-large-2
+    name: Mistral Large 2
+    provider: Mistral AI (Open-Source / Weights)
+    type: opensource
+    description: Flagship 123B open-weights multilingual code and system architecture model.
+    baseUrl: https://api.mistral.ai/v1
+    endpointType: openai_compatible
+    apiKeyEnvVar: MISTRAL_API_KEY
+    modelName: mistral-large-latest
+  - id: ollama-local-qwen-coder
+    name: Ollama Local (Qwen 2.5 Coder)
+    provider: Local Machine / Ollama
+    type: local_ollama
+    description: Local Qwen 2.5 Coder model running via Ollama at localhost:11434.
+    baseUrl: http://localhost:11434/v1
+    endpointType: openai_compatible
+    apiKeyEnvVar: LOCAL_OLLAMA_KEY
+    modelName: qwen2.5-coder:latest
+  - id: ollama-local-llama3
+    name: Ollama Local (Llama 3)
+    provider: Local Machine / vLLM
+    type: local_ollama
+    description: Self-hosted local open-source server running via Ollama or vLLM at
+      localhost:11434.
+    baseUrl: http://localhost:11434/v1
+    endpointType: openai_compatible
+    apiKeyEnvVar: LOCAL_OLLAMA_KEY
+    modelName: llama3:latest
+  - id: gemini-3.6-flash
+    name: Gemini 3.6 Flash
+    provider: Google AI Studio
+    type: proprietary
+    description: Google DeepMind high-speed multimodal reasoning model.
+    baseUrl: https://generativelanguage.googleapis.com
+    endpointType: gemini
+    apiKeyEnvVar: GEMINI_API_KEY
+    modelName: gemini-3.6-flash
+  - id: aether-local-engine
+    name: Aether Native Offline Engine
+    provider: Built-in Deterministic AI
+    type: offline
+    description: Zero-latency offline career intelligence fallback engine running
+      directly in WebAssembly.
+    baseUrl: internal
+    endpointType: offline
     apiKeyEnvVar: ""
-    modelName: "aether-v1"
+    modelName: aether-v1

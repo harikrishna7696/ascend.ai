@@ -67,10 +67,21 @@ function loadModelConfig(): ModelConfig {
   }
 
   return {
-    active_model: 'llama-3.3-70b',
+    active_model: 'ollama-local-qwen-coder',
     default_temperature: 0.7,
     max_tokens: 4096,
     models: [
+      {
+        id: 'ollama-local-qwen-coder',
+        name: 'Ollama Local (Qwen 2.5 Coder)',
+        provider: 'Local Machine / Ollama',
+        type: 'local_ollama',
+        description: 'Local Qwen 2.5 Coder model running via Ollama at localhost:11434.',
+        baseUrl: 'http://localhost:11434/v1',
+        endpointType: 'openai_compatible',
+        apiKeyEnvVar: 'LOCAL_OLLAMA_KEY',
+        modelName: 'qwen2.5-coder:latest',
+      },
       {
         id: 'llama-3.3-70b',
         name: 'Llama 3.3 70B Instruct',
@@ -971,25 +982,25 @@ Include:
 
       const defaultSkillMatrix = [
         // Already Strong
-        { name: 'Python', category: 'strong', marketDemandPercentage: 89, currentLevelPercentage: 90, targetLevelPercentage: 95, gapPercentage: 5, priority: 'LOW', whyItMatters: 'Essential foundation for production AI & data pipelines.', isSelected: true },
-        { name: 'PyTorch', category: 'strong', marketDemandPercentage: 85, currentLevelPercentage: 88, targetLevelPercentage: 92, gapPercentage: 4, priority: 'LOW', whyItMatters: 'Primary deep learning framework for computer vision models.', isSelected: true },
-        { name: 'YOLO', category: 'strong', marketDemandPercentage: 78, currentLevelPercentage: 85, targetLevelPercentage: 90, gapPercentage: 5, priority: 'LOW', whyItMatters: 'Core real-time object detection architecture in industry.', isSelected: true },
-        { name: 'TensorRT', category: 'strong', marketDemandPercentage: 74, currentLevelPercentage: 80, targetLevelPercentage: 88, gapPercentage: 8, priority: 'LOW', whyItMatters: 'High-performance inference acceleration engine for NVIDIA GPUs.', isSelected: true },
-        { name: 'Docker', category: 'strong', marketDemandPercentage: 72, currentLevelPercentage: 82, targetLevelPercentage: 88, gapPercentage: 6, priority: 'LOW', whyItMatters: 'Containerized deployment for edge and cloud production systems.', isSelected: true },
+        { id: 'sk_python', name: 'Python', category: 'strong', marketDemandPercentage: 89, currentLevelPercentage: 90, targetLevelPercentage: 95, gapPercentage: 5, priority: 'LOW', whyItMatters: 'Essential foundation for production AI & data pipelines.', isSelected: true },
+        { id: 'sk_pytorch', name: 'PyTorch', category: 'strong', marketDemandPercentage: 85, currentLevelPercentage: 88, targetLevelPercentage: 92, gapPercentage: 4, priority: 'LOW', whyItMatters: 'Primary deep learning framework for computer vision models.', isSelected: true },
+        { id: 'sk_yolo', name: 'YOLO', category: 'strong', marketDemandPercentage: 78, currentLevelPercentage: 85, targetLevelPercentage: 90, gapPercentage: 5, priority: 'LOW', whyItMatters: 'Core real-time object detection architecture in industry.', isSelected: true },
+        { id: 'sk_tensorrt', name: 'TensorRT', category: 'strong', marketDemandPercentage: 74, currentLevelPercentage: 80, targetLevelPercentage: 88, gapPercentage: 8, priority: 'LOW', whyItMatters: 'High-performance inference acceleration engine for NVIDIA GPUs.', isSelected: true },
+        { id: 'sk_docker', name: 'Docker', category: 'strong', marketDemandPercentage: 72, currentLevelPercentage: 82, targetLevelPercentage: 88, gapPercentage: 6, priority: 'LOW', whyItMatters: 'Containerized deployment for edge and cloud production systems.', isSelected: true },
 
         // High Priority Gaps
-        { name: 'CUDA', category: 'high_priority', marketDemandPercentage: 76, currentLevelPercentage: 35, targetLevelPercentage: 85, gapPercentage: 50, priority: 'HIGH', whyItMatters: 'Parallel GPU kernel programming required for high-throughput video streams.', isSelected: true },
-        { name: 'ROS2', category: 'high_priority', marketDemandPercentage: 68, currentLevelPercentage: 30, targetLevelPercentage: 80, gapPercentage: 50, priority: 'HIGH', whyItMatters: 'De-facto middleware for robotics & autonomous defense platforms.', isSelected: true },
-        { name: 'Tracking', category: 'high_priority', marketDemandPercentage: 71, currentLevelPercentage: 45, targetLevelPercentage: 85, gapPercentage: 40, priority: 'HIGH', whyItMatters: 'Multi-object tracking (DeepSORT, ByteTRACK) is vital for tactical video analytics.', isSelected: true },
-        { name: 'SLAM', category: 'high_priority', marketDemandPercentage: 58, currentLevelPercentage: 25, targetLevelPercentage: 75, gapPercentage: 50, priority: 'HIGH', whyItMatters: 'Simultaneous Localization and Mapping for GPS-denied environments.', isSelected: true },
-        { name: 'C++', category: 'high_priority', marketDemandPercentage: 82, currentLevelPercentage: 55, targetLevelPercentage: 85, gapPercentage: 30, priority: 'HIGH', whyItMatters: 'Ultra-low-latency production embedded systems code.', isSelected: true },
-        { name: 'Transformers', category: 'high_priority', marketDemandPercentage: 64, currentLevelPercentage: 40, targetLevelPercentage: 80, gapPercentage: 40, priority: 'HIGH', whyItMatters: 'Vision Transformers (ViT) and spatial-temporal attention models.', isSelected: true },
+        { id: 'sk_cuda', name: 'CUDA', category: 'high_priority', marketDemandPercentage: 76, currentLevelPercentage: 35, targetLevelPercentage: 85, gapPercentage: 50, priority: 'HIGH', whyItMatters: 'Parallel GPU kernel programming required for high-throughput video streams.', isSelected: true },
+        { id: 'sk_ros2', name: 'ROS2', category: 'high_priority', marketDemandPercentage: 68, currentLevelPercentage: 30, targetLevelPercentage: 80, gapPercentage: 50, priority: 'HIGH', whyItMatters: 'De-facto middleware for robotics & autonomous defense platforms.', isSelected: true },
+        { id: 'sk_tracking', name: 'Tracking', category: 'high_priority', marketDemandPercentage: 71, currentLevelPercentage: 45, targetLevelPercentage: 85, gapPercentage: 40, priority: 'HIGH', whyItMatters: 'Multi-object tracking (DeepSORT, ByteTRACK) is vital for tactical video analytics.', isSelected: true },
+        { id: 'sk_slam', name: 'SLAM', category: 'high_priority', marketDemandPercentage: 58, currentLevelPercentage: 25, targetLevelPercentage: 75, gapPercentage: 50, priority: 'HIGH', whyItMatters: 'Simultaneous Localization and Mapping for GPS-denied environments.', isSelected: true },
+        { id: 'sk_cpp', name: 'C++', category: 'high_priority', marketDemandPercentage: 82, currentLevelPercentage: 55, targetLevelPercentage: 85, gapPercentage: 30, priority: 'HIGH', whyItMatters: 'Ultra-low-latency production embedded systems code.', isSelected: true },
+        { id: 'sk_transformers', name: 'Transformers', category: 'high_priority', marketDemandPercentage: 64, currentLevelPercentage: 40, targetLevelPercentage: 80, gapPercentage: 40, priority: 'HIGH', whyItMatters: 'Vision Transformers (ViT) and spatial-temporal attention models.', isSelected: true },
 
         // Optional
-        { name: 'VLM', category: 'optional', marketDemandPercentage: 42, currentLevelPercentage: 20, targetLevelPercentage: 75, gapPercentage: 55, priority: 'MEDIUM', whyItMatters: 'Vision-Language Models for natural query surveillance & scene understanding.', isSelected: false },
-        { name: 'CLIP', category: 'optional', marketDemandPercentage: 38, currentLevelPercentage: 25, targetLevelPercentage: 75, gapPercentage: 50, priority: 'MEDIUM', whyItMatters: 'Zero-shot classification & open-vocabulary target search.', isSelected: false },
-        { name: 'Multimodal AI', category: 'optional', marketDemandPercentage: 45, currentLevelPercentage: 30, targetLevelPercentage: 80, gapPercentage: 50, priority: 'MEDIUM', whyItMatters: 'Fusing thermal, optical, and acoustic telemetry streams.', isSelected: false },
-        { name: 'Reinforcement Learning', category: 'optional', marketDemandPercentage: 28, currentLevelPercentage: 15, targetLevelPercentage: 65, gapPercentage: 50, priority: 'LOW', whyItMatters: 'Autonomous navigation & reactive control in dynamic defense environments.', isSelected: false },
+        { id: 'sk_vlm', name: 'VLM', category: 'optional', marketDemandPercentage: 42, currentLevelPercentage: 20, targetLevelPercentage: 75, gapPercentage: 55, priority: 'MEDIUM', whyItMatters: 'Vision-Language Models for natural query surveillance & scene understanding.', isSelected: false },
+        { id: 'sk_clip', name: 'CLIP', category: 'optional', marketDemandPercentage: 38, currentLevelPercentage: 25, targetLevelPercentage: 75, gapPercentage: 50, priority: 'MEDIUM', whyItMatters: 'Zero-shot classification & open-vocabulary target search.', isSelected: false },
+        { id: 'sk_multimodalai', name: 'Multimodal AI', category: 'optional', marketDemandPercentage: 45, currentLevelPercentage: 30, targetLevelPercentage: 80, gapPercentage: 50, priority: 'MEDIUM', whyItMatters: 'Fusing thermal, optical, and acoustic telemetry streams.', isSelected: false },
+        { id: 'sk_reinforcementlearning', name: 'Reinforcement Learning', category: 'optional', marketDemandPercentage: 28, currentLevelPercentage: 15, targetLevelPercentage: 65, gapPercentage: 50, priority: 'LOW', whyItMatters: 'Autonomous navigation & reactive control in dynamic defense environments.', isSelected: false },
       ];
 
       // Store skills in SQLite

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { SkillItem } from '../../types';
 import { CheckSquare, Square, CheckCircle2, ArrowRight, Sparkles, AlertCircle } from 'lucide-react';
 
@@ -8,17 +8,33 @@ interface Step7Props {
 }
 
 export const Step7SkillSelection: React.FC<Step7Props> = ({ initialSkills, onContinue }) => {
-  const [skills, setSkills] = useState<SkillItem[]>(initialSkills);
+  const normalizeSkills = (items: SkillItem[]) => {
+    return (items || []).map((s, idx) => ({
+      ...s,
+      id: s.id || `sk_${(s.name || 'skill').toLowerCase().replace(/[^a-z0-9]/g, '')}_${idx}`,
+    }));
+  };
 
-  const toggleSkill = (id: string) => {
-    setSkills(
-      skills.map((s) => (s.id === id ? { ...s, isSelected: !s.isSelected } : s))
+  const [skills, setSkills] = useState<SkillItem[]>(() => normalizeSkills(initialSkills));
+
+  useEffect(() => {
+    if (initialSkills && initialSkills.length > 0) {
+      setSkills(normalizeSkills(initialSkills));
+    }
+  }, [initialSkills]);
+
+  const toggleSkill = (skillId: string, skillName: string) => {
+    setSkills((prevSkills) =>
+      prevSkills.map((s) => {
+        const isMatch = (skillId && s.id === skillId) || (skillName && s.name === skillName);
+        return isMatch ? { ...s, isSelected: !s.isSelected } : s;
+      })
     );
   };
 
   const handleSelectAllHighPriority = () => {
-    setSkills(
-      skills.map((s) =>
+    setSkills((prevSkills) =>
+      prevSkills.map((s) =>
         s.category === 'high_priority' ? { ...s, isSelected: true } : s
       )
     );
@@ -70,7 +86,7 @@ export const Step7SkillSelection: React.FC<Step7Props> = ({ initialSkills, onCon
             {strongSkills.map((s) => (
               <div
                 key={s.id}
-                onClick={() => toggleSkill(s.id)}
+                onClick={() => toggleSkill(s.id, s.name)}
                 className={`p-3.5 rounded-xl border transition-all cursor-pointer flex items-center justify-between ${
                   s.isSelected
                     ? 'bg-emerald-950/30 border-emerald-500/50 text-emerald-300'
@@ -107,7 +123,7 @@ export const Step7SkillSelection: React.FC<Step7Props> = ({ initialSkills, onCon
             {gapSkills.map((s) => (
               <div
                 key={s.id}
-                onClick={() => toggleSkill(s.id)}
+                onClick={() => toggleSkill(s.id, s.name)}
                 className={`p-4 rounded-xl border transition-all cursor-pointer space-y-2 ${
                   s.isSelected
                     ? 'bg-gradient-to-r from-cyan-950/80 to-blue-950/80 border-cyan-400 text-cyan-200 shadow-[0_0_15px_rgba(6,182,212,0.2)]'
@@ -158,7 +174,7 @@ export const Step7SkillSelection: React.FC<Step7Props> = ({ initialSkills, onCon
             {optionalSkills.map((s) => (
               <div
                 key={s.id}
-                onClick={() => toggleSkill(s.id)}
+                onClick={() => toggleSkill(s.id, s.name)}
                 className={`p-3.5 rounded-xl border transition-all cursor-pointer flex items-center justify-between ${
                   s.isSelected
                     ? 'bg-indigo-950/40 border-indigo-400 text-indigo-200'
