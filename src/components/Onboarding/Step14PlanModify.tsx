@@ -6,7 +6,7 @@ interface Step14Props {
   currentPlan: TransitionPlan;
   planVersions: PlanVersion[];
   onApplyModification: (promptText: string) => void;
-  onSelectVersion: (version: TransitionPlan) => void;
+  onSelectVersion: (version: PlanVersion) => void;
   onFinalize: () => void;
   onBackToReview: () => void;
   isLoading: boolean;
@@ -73,14 +73,14 @@ export const Step14PlanModify: React.FC<Step14Props> = ({
             {planVersions.map((v) => (
               <button
                 key={v.id}
-                onClick={() => onSelectVersion(v.planData)}
-                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all border ${
-                  v.versionNumber === currentPlan.version
+                onClick={() => onSelectVersion(v)}
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all border cursor-pointer ${
+                  v.versionNumber === (currentPlan.version || 1)
                     ? 'bg-cyan-950 text-cyan-300 border-cyan-400 shadow-[0_0_10px_rgba(6,182,212,0.2)]'
                     : 'bg-slate-950 text-slate-400 border-slate-800 hover:border-slate-700'
                 }`}
               >
-                Version {v.versionNumber} {v.versionNumber === currentPlan.version ? '(Active)' : ''}
+                Version {v.versionNumber} {v.versionNumber === (currentPlan.version || 1) ? '(Active)' : ''}
               </button>
             ))}
           </div>

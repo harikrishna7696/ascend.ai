@@ -1350,6 +1350,9 @@ REQUIREMENTS FOR ROADMAP:
 
       const db = await getDb();
 
+      // Deactivate older active versions
+      db.run(`UPDATE plan_versions SET is_active = 0;`);
+
       // Get highest version
       const vRows = db.exec(`SELECT MAX(version_number) FROM plan_versions;`);
       let maxV = 0;
@@ -1359,6 +1362,8 @@ REQUIREMENTS FOR ROADMAP:
 
       const newVersionNum = maxV + 1;
       const versionId = `plan_v${newVersionNum}_${Date.now()}`;
+      planData.version = newVersionNum;
+      planData.id = versionId;
 
       db.run(
         `INSERT INTO plan_versions (id, version_number, title, changes_summary, plan_json, is_active, created_at)
@@ -1518,6 +1523,9 @@ Instructions:
 
       const db = await getDb();
 
+      // Deactivate older active versions
+      db.run(`UPDATE plan_versions SET is_active = 0;`);
+
       // Get highest version
       const vRows = db.exec(`SELECT MAX(version_number) FROM plan_versions;`);
       let maxV = 1;
@@ -1527,6 +1535,8 @@ Instructions:
 
       const newVersionNum = maxV + 1;
       const versionId = `plan_v${newVersionNum}_${Date.now()}`;
+      updatedPlanData.version = newVersionNum;
+      updatedPlanData.id = versionId;
 
       db.run(
         `INSERT INTO plan_versions (id, version_number, title, changes_summary, plan_json, is_active, created_at)
@@ -1546,14 +1556,19 @@ Instructions:
       const allV = db.exec(`SELECT id, version_number, title, changes_summary, plan_json, created_at FROM plan_versions ORDER BY version_number ASC;`);
       let planVersionsList: any[] = [];
       if (allV.length > 0 && allV[0].values) {
-        planVersionsList = allV[0].values.map((row: any) => ({
-          id: row[0],
-          versionNumber: row[1],
-          title: row[2],
-          changesSummary: row[3],
-          planData: JSON.parse(row[4] || '{}'),
-          createdAt: row[5],
-        }));
+        planVersionsList = allV[0].values.map((row: any) => {
+          const pd = JSON.parse(row[4] || '{}');
+          pd.version = row[1];
+          pd.id = row[0];
+          return {
+            id: row[0],
+            versionNumber: row[1],
+            title: row[2],
+            changesSummary: row[3],
+            planData: pd,
+            createdAt: row[5],
+          };
+        });
       }
 
       res.json({
@@ -1698,6 +1713,64 @@ Instructions:
     }
   });
 
+  // 6.5 Activate Selected Plan Version
+  app.post('/api/plan/activate', async (req, res) => {
+    try {
+      const { versionId, versionNumber } = req.body;
+      const db = await getDb();
+
+      db.run(`UPDATE plan_versions SET is_active = 0;`);
+
+      if (versionId) {
+        db.run(`UPDATE plan_versions SET is_active = 1 WHERE id = ?;`, [versionId]);
+      } else if (versionNumber) {
+        db.run(`UPDATE plan_versions SET is_active = 1 WHERE version_number = ?;`, [versionNumber]);
+      }
+
+      saveDb();
+
+      // Get active plan
+      const planRows = db.exec(`SELECT id, version_number, title, changes_summary, plan_json FROM plan_versions WHERE is_active = 1 LIMIT 1;`);
+      let activePlan: any = null;
+
+      if (planRows.length > 0 && planRows[0].values && planRows[0].values[0]) {
+        const row = planRows[0].values[0];
+        activePlan = JSON.parse(row[4] as string);
+        if (activePlan) {
+          activePlan.version = row[1];
+          activePlan.id = row[0];
+        }
+      }
+
+      const allV = db.exec(`SELECT id, version_number, title, changes_summary, plan_json, created_at FROM plan_versions ORDER BY version_number ASC;`);
+      let planVersionsList: any[] = [];
+      if (allV.length > 0 && allV[0].values) {
+        planVersionsList = allV[0].values.map((row: any) => {
+          const pd = JSON.parse(row[4] || '{}');
+          pd.version = row[1];
+          pd.id = row[0];
+          return {
+            id: row[0],
+            versionNumber: row[1],
+            title: row[2],
+            changesSummary: row[3],
+            planData: pd,
+            createdAt: row[5],
+          };
+        });
+      }
+
+      res.json({
+        success: true,
+        activePlan,
+        plan: activePlan,
+        planVersions: planVersionsList,
+      });
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
   // 7. Get Full Dashboard Data
   app.get('/api/dashboard/data', async (req, res) => {
     try {
@@ -1709,14 +1782,19 @@ Instructions:
 
       const allV = db.exec(`SELECT id, version_number, title, changes_summary, plan_json, created_at FROM plan_versions ORDER BY version_number ASC;`);
       if (allV.length > 0 && allV[0].values) {
-        planVersionsList = allV[0].values.map((row: any) => ({
-          id: row[0],
-          versionNumber: row[1],
-          title: row[2],
-          changesSummary: row[3],
-          planData: JSON.parse(row[4] || '{}'),
-          createdAt: row[5],
-        }));
+        planVersionsList = allV[0].values.map((row: any) => {
+          const pd = JSON.parse(row[4] || '{}');
+          pd.version = row[1];
+          pd.id = row[0];
+          return {
+            id: row[0],
+            versionNumber: row[1],
+            title: row[2],
+            changesSummary: row[3],
+            planData: pd,
+            createdAt: row[5],
+          };
+        });
       }
 
       if (planRows.length === 0 || !planRows[0].values || planRows[0].values.length === 0) {
@@ -1730,7 +1808,12 @@ Instructions:
       }
 
       if (planRows.length > 0 && planRows[0].values && planRows[0].values[0]) {
-        activePlan = JSON.parse(planRows[0].values[0][4] as string);
+        const row = planRows[0].values[0];
+        activePlan = JSON.parse(row[4] as string);
+        if (activePlan) {
+          activePlan.version = row[1];
+          activePlan.id = row[0];
+        }
       }
 
       // Tasks completion query

@@ -7,7 +7,7 @@ interface SettingsViewProps {
   plan: TransitionPlan;
   planVersions: PlanVersion[];
   onResetData: () => void;
-  onSelectVersion: (plan: TransitionPlan) => void;
+  onSelectVersion: (version: PlanVersion) => void;
   onModelChanged?: (model: ModelDef) => void;
 }
 
@@ -88,14 +88,14 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
               </div>
 
               <button
-                onClick={() => onSelectVersion(v.planData)}
+                onClick={() => onSelectVersion(v)}
                 className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all border ${
-                  v.versionNumber === plan.version
+                  v.versionNumber === (plan.version || 1)
                     ? 'bg-cyan-500/20 text-cyan-300 border-cyan-400'
-                    : 'bg-white/5 text-gray-400 border-white/10 hover:text-white'
+                    : 'bg-white/5 text-gray-400 border-white/10 hover:text-white cursor-pointer'
                 }`}
               >
-                {v.versionNumber === plan.version ? 'Active' : 'Switch To Version'}
+                {v.versionNumber === (plan.version || 1) ? 'Active' : 'Switch To Version'}
               </button>
             </div>
           ))}

@@ -317,6 +317,55 @@ export function App() {
     }
   };
 
+  // SWITCH PLAN VERSION
+  const handleSelectVersion = async (versionObj: PlanVersion) => {
+    setIsLoading(true);
+    try {
+      const res = await fetch('/api/plan/activate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          versionId: versionObj.id,
+          versionNumber: versionObj.versionNumber,
+        }),
+      });
+
+      const data = res.ok ? await res.json() : null;
+      const rawPlan = data?.plan || data?.activePlan || versionObj.planData;
+      const activePlan = {
+        ...rawPlan,
+        version: versionObj.versionNumber,
+        id: versionObj.id,
+      };
+
+      setCurrentPlan(activePlan);
+      if (data?.planVersions) {
+        setPlanVersions(data.planVersions);
+      }
+
+      if (activePlan && activePlan.months) {
+        const firstMonth = activePlan.months[0];
+        const firstWeek = firstMonth?.weeks?.[0];
+        const firstDay = firstWeek?.days?.[0];
+        if (firstDay && firstDay.tasks) {
+          setTodayTasks(firstDay.tasks);
+        }
+      }
+      if (activePlan.contentCalendar) {
+        setContentCalendar(activePlan.contentCalendar);
+      }
+    } catch (err) {
+      console.error('Error activating plan version:', err);
+      setCurrentPlan({
+        ...versionObj.planData,
+        version: versionObj.versionNumber,
+        id: versionObj.id,
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   // FINALIZE PLAN -> STEP 15 (Main Dashboard Command Center)
   const handleFinalizePlan = async () => {
     if (!currentPlan) return;
@@ -525,7 +574,7 @@ export function App() {
               currentPlan={currentPlan}
               planVersions={planVersions}
               onApplyModification={handleModifyPlanPrompt}
-              onSelectVersion={(v) => setCurrentPlan(v)}
+              onSelectVersion={handleSelectVersion}
               onFinalize={handleFinalizePlan}
               onBackToReview={() => setCurrentStep(13)}
               isLoading={isLoading}
@@ -632,7 +681,7 @@ export function App() {
                 plan={currentPlan}
                 planVersions={planVersions}
                 onResetData={handleResetData}
-                onSelectVersion={(v) => setCurrentPlan(v)}
+                onSelectVersion={handleSelectVersion}
                 onModelChanged={(m) => setActiveModel(m)}
               />
             )}
