@@ -1,4 +1,5 @@
 import React from 'react';
+import { motion } from 'motion/react';
 import { MarketIntelligence } from '../../types';
 import { BarChart3, ArrowRight, ShieldAlert, Cpu } from 'lucide-react';
 
@@ -87,13 +88,22 @@ export const Step5JobIntelligence: React.FC<Step5Props> = ({ marketIntel, onCont
       </div>
 
       {/* Continue Button */}
-      <button
+      <motion.button
+        whileHover={{ scale: 1.015 }}
+        whileTap={{ scale: 0.985 }}
         onClick={onContinue}
-        className="w-full py-4 px-6 rounded-xl text-sm font-bold uppercase tracking-wider text-slate-950 bg-gradient-to-r from-cyan-400 via-sky-300 to-indigo-300 hover:from-cyan-300 hover:to-indigo-200 shadow-[0_0_20px_rgba(6,182,212,0.3)] transition-all flex items-center justify-center gap-2"
+        className="relative w-full py-4 px-6 rounded-2xl text-sm font-extrabold uppercase tracking-wider text-slate-950 bg-gradient-to-r from-cyan-400 via-sky-300 to-indigo-300 hover:from-cyan-300 hover:to-indigo-200 shadow-[0_0_25px_rgba(6,182,212,0.35)] transition-all flex items-center justify-center gap-2 overflow-hidden cursor-pointer group"
       >
-        <span>REVIEW ANALYZED JOB SUMMARIES</span>
-        <ArrowRight className="w-4 h-4" />
-      </button>
+        <motion.div
+          className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -skew-x-12"
+          animate={{ x: ['-100%', '200%'] }}
+          transition={{ repeat: Infinity, duration: 2.5, ease: 'easeInOut' }}
+        />
+        <span className="relative z-10 font-mono">REVIEW ANALYZED JOB SUMMARIES</span>
+        <motion.div animate={{ x: [0, 4, 0] }} transition={{ repeat: Infinity, duration: 1.5 }}>
+          <ArrowRight className="w-4 h-4 text-slate-950 relative z-10" />
+        </motion.div>
+      </motion.button>
     </div>
   );
 };

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { motion } from 'motion/react';
 import { Bot, Send, Sparkles, Loader2, User } from 'lucide-react';
 import { ChatMessage } from '../../types';
 
@@ -55,14 +56,16 @@ export const AICoachView: React.FC<AICoachViewProps> = ({
         </span>
         <div className="flex flex-wrap gap-2">
           {suggestedPrompts.map((p, idx) => (
-            <button
+            <motion.button
               key={idx}
               type="button"
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.97 }}
               onClick={() => onSendMessage(p)}
-              className="px-3.5 py-1.5 rounded-xl bg-white/5 border border-white/10 hover:border-cyan-500/40 text-gray-300 hover:text-cyan-300 text-xs transition-all text-left backdrop-blur-sm"
+              className="px-3.5 py-1.5 rounded-xl bg-white/5 border border-white/10 hover:border-cyan-500/40 text-gray-300 hover:text-cyan-300 text-xs transition-all text-left backdrop-blur-sm cursor-pointer"
             >
               "{p}"
-            </button>
+            </motion.button>
           ))}
         </div>
       </div>
@@ -125,14 +128,16 @@ export const AICoachView: React.FC<AICoachViewProps> = ({
           disabled={isLoading}
           className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-cyan-500/60 backdrop-blur-md"
         />
-        <button
+        <motion.button
           type="submit"
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
           disabled={isLoading || !inputMessage.trim()}
-          className="px-5 py-3 rounded-xl text-xs font-bold uppercase text-black bg-cyan-400 hover:bg-cyan-300 disabled:opacity-40 transition-all flex items-center gap-1.5 shadow-[0_0_15px_rgba(6,182,212,0.3)]"
+          className="px-5 py-3 rounded-xl text-xs font-bold uppercase text-black bg-cyan-400 hover:bg-cyan-300 disabled:opacity-40 transition-all flex items-center gap-1.5 shadow-[0_0_15px_rgba(6,182,212,0.3)] cursor-pointer"
         >
-          {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+          {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4 text-black" />}
           <span>Send</span>
-        </button>
+        </motion.button>
       </form>
     </div>
   );

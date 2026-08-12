@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { motion } from 'motion/react';
 import { UserProfile } from '../../types';
 import { ShieldCheck, Edit3, ArrowRight, Check, Plus, Trash2 } from 'lucide-react';
 
@@ -65,13 +66,15 @@ export const Step2ResumeIntelligence: React.FC<Step2Props> = ({ profile, onConti
           </p>
         </div>
 
-        <button
+        <motion.button
+          whileHover={{ scale: 1.03 }}
+          whileTap={{ scale: 0.97 }}
           onClick={() => setIsEditing(!isEditing)}
-          className="self-start sm:self-auto px-3.5 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider text-cyan-300 bg-slate-900 border border-cyan-500/30 hover:bg-slate-800 transition-all flex items-center gap-1.5"
+          className="self-start sm:self-auto px-3.5 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider text-cyan-300 bg-slate-900 border border-cyan-500/30 hover:bg-slate-800 transition-all flex items-center gap-1.5 cursor-pointer shadow-[0_0_10px_rgba(6,182,212,0.15)]"
         >
           <Edit3 className="w-3.5 h-3.5 text-cyan-400" />
           {isEditing ? 'Done Editing' : 'Edit Profile'}
-        </button>
+        </motion.button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
@@ -202,13 +205,22 @@ export const Step2ResumeIntelligence: React.FC<Step2Props> = ({ profile, onConti
       </div>
 
       {/* Continue Button */}
-      <button
+      <motion.button
+        whileHover={{ scale: 1.015 }}
+        whileTap={{ scale: 0.985 }}
         onClick={handleSubmit}
-        className="w-full py-3.5 px-6 rounded-xl text-sm font-bold uppercase tracking-wider text-slate-950 bg-gradient-to-r from-cyan-400 via-sky-300 to-indigo-300 hover:from-cyan-300 hover:to-indigo-200 shadow-[0_0_20px_rgba(6,182,212,0.3)] transition-all flex items-center justify-center gap-2"
+        className="relative w-full py-4 px-6 rounded-2xl text-sm font-extrabold uppercase tracking-wider text-slate-950 bg-gradient-to-r from-cyan-400 via-sky-300 to-indigo-300 hover:from-cyan-300 hover:to-indigo-200 shadow-[0_0_25px_rgba(6,182,212,0.35)] transition-all flex items-center justify-center gap-2 overflow-hidden cursor-pointer group"
       >
-        <span>CONTINUE TO TARGET SELECTION</span>
-        <ArrowRight className="w-4 h-4" />
-      </button>
+        <motion.div
+          className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -skew-x-12"
+          animate={{ x: ['-100%', '200%'] }}
+          transition={{ repeat: Infinity, duration: 2.5, ease: 'easeInOut' }}
+        />
+        <span className="relative z-10 font-mono">CONTINUE TO TARGET SELECTION</span>
+        <motion.div animate={{ x: [0, 4, 0] }} transition={{ repeat: Infinity, duration: 1.5 }}>
+          <ArrowRight className="w-4 h-4 text-slate-950 relative z-10" />
+        </motion.div>
+      </motion.button>
     </div>
   );
 };

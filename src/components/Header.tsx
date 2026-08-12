@@ -1,4 +1,5 @@
 import React from 'react';
+import { motion } from 'motion/react';
 import { Shield, Radio, Cpu, RefreshCw, Sparkles, Activity, Zap, ChevronDown } from 'lucide-react';
 import { ModelDef } from '../types';
 
@@ -56,7 +57,9 @@ export const Header: React.FC<HeaderProps> = ({
         {/* Model Dropdown & Readiness Index & Actions */}
         <div className="flex items-center gap-2 sm:gap-4">
           {onOpenModelSelector && (
-            <button
+            <motion.button
+              whileHover={{ scale: 1.04 }}
+              whileTap={{ scale: 0.96 }}
               onClick={onOpenModelSelector}
               title="Click to select active AI Model"
               className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-gray-900/90 border border-cyan-500/40 hover:border-cyan-400 text-cyan-300 transition-all font-mono text-xs group shadow-[0_0_12px_rgba(6,182,212,0.15)] cursor-pointer"
@@ -66,7 +69,7 @@ export const Header: React.FC<HeaderProps> = ({
                 {activeModel ? activeModel.name : 'Select Model'}
               </span>
               <ChevronDown className="w-3.5 h-3.5 text-gray-400 group-hover:text-cyan-300 transition-colors shrink-0" />
-            </button>
+            </motion.button>
           )}
 
           {isDashboardActive && (
@@ -98,23 +101,27 @@ export const Header: React.FC<HeaderProps> = ({
           </div>
 
           {isDashboardActive && onStartNewPlan && (
-            <button
+            <motion.button
+              whileHover={{ scale: 1.04 }}
+              whileTap={{ scale: 0.96 }}
               onClick={onStartNewPlan}
-              className="px-3 py-1.5 rounded-xl text-xs font-mono font-bold text-cyan-300 bg-white/5 border border-white/10 hover:bg-white/10 transition-all flex items-center gap-1.5"
+              className="px-3 py-1.5 rounded-xl text-xs font-mono font-bold text-cyan-300 bg-white/5 border border-white/10 hover:bg-white/10 transition-all flex items-center gap-1.5 cursor-pointer shadow-[0_0_10px_rgba(6,182,212,0.1)]"
             >
               <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
               <span className="hidden sm:inline">New Transition</span>
-            </button>
+            </motion.button>
           )}
 
           {onResetData && (
-            <button
+            <motion.button
+              whileHover={{ scale: 1.08 }}
+              whileTap={{ scale: 0.92 }}
               onClick={onResetData}
               title="Reset Platform Data"
-              className="p-2 rounded-xl text-gray-400 hover:text-red-400 hover:bg-red-500/10 border border-white/10 hover:border-red-500/30 transition-all"
+              className="p-2 rounded-xl text-gray-400 hover:text-red-400 hover:bg-red-500/10 border border-white/10 hover:border-red-500/30 transition-all cursor-pointer"
             >
               <RefreshCw className="w-4 h-4" />
-            </button>
+            </motion.button>
           )}
         </div>
       </div>

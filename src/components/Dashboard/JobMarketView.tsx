@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { motion } from 'motion/react';
 import { JobItem } from '../../types';
 import { Briefcase, ExternalLink, Search, Filter, CheckCircle2, AlertTriangle, Building2, MapPin } from 'lucide-react';
 
@@ -50,26 +51,30 @@ export const JobMarketView: React.FC<JobMarketViewProps> = ({ jobs, targetRole }
         </div>
 
         <div className="flex items-center gap-2 w-full sm:w-auto">
-          <button
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
             onClick={() => setSelectedFilter('all')}
-            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all border ${
+            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all border cursor-pointer ${
               selectedFilter === 'all'
                 ? 'bg-cyan-950 text-cyan-300 border-cyan-400'
                 : 'bg-slate-950 text-slate-400 border-slate-800'
             }`}
           >
             All Jobs ({jobs.length})
-          </button>
-          <button
+          </motion.button>
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
             onClick={() => setSelectedFilter('high_match')}
-            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all border ${
+            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all border cursor-pointer ${
               selectedFilter === 'high_match'
                 ? 'bg-cyan-950 text-cyan-300 border-cyan-400'
                 : 'bg-slate-950 text-slate-400 border-slate-800'
             }`}
           >
             High Match (80%+)
-          </button>
+          </motion.button>
         </div>
       </div>
 

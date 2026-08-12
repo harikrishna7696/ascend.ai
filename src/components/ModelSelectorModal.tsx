@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { motion } from 'motion/react';
 import { ModelDef } from '../types';
 import { Cpu, Check, Zap, Server, Shield, Sparkles, Terminal, X, Code, ExternalLink } from 'lucide-react';
 
@@ -90,12 +91,14 @@ export const ModelSelectorModal: React.FC<ModelSelectorModalProps> = ({
               </p>
             </div>
           </div>
-          <button
+          <motion.button
+            whileHover={{ scale: 1.1, rotate: 90 }}
+            whileTap={{ scale: 0.9 }}
             onClick={onClose}
-            className="p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-all"
+            className="p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-all cursor-pointer"
           >
             <X className="w-5 h-5" />
-          </button>
+          </motion.button>
         </div>
 
         {/* Model List */}
@@ -103,8 +106,10 @@ export const ModelSelectorModal: React.FC<ModelSelectorModalProps> = ({
           {models.map((m) => {
             const isSelected = m.id === activeModelId;
             return (
-              <div
+              <motion.div
                 key={m.id}
+                whileHover={{ scale: 1.015, x: 2 }}
+                whileTap={{ scale: 0.985 }}
                 onClick={() => {
                   onSelectModel(m.id);
                   onClose();
@@ -151,7 +156,7 @@ export const ModelSelectorModal: React.FC<ModelSelectorModalProps> = ({
                     )}
                   </div>
                 </div>
-              </div>
+              </motion.div>
             );
           })}
         </div>
@@ -164,16 +169,18 @@ export const ModelSelectorModal: React.FC<ModelSelectorModalProps> = ({
           </div>
 
           {onOpenYamlSettings && (
-            <button
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
               onClick={() => {
                 onClose();
                 onOpenYamlSettings();
               }}
-              className="flex items-center gap-1.5 text-cyan-400 hover:text-cyan-300 font-mono font-semibold transition-colors"
+              className="flex items-center gap-1.5 text-cyan-400 hover:text-cyan-300 font-mono font-semibold transition-colors cursor-pointer"
             >
               <span>Edit YAML Config</span>
               <ExternalLink className="w-3.5 h-3.5" />
-            </button>
+            </motion.button>
           )}
         </div>
       </div>

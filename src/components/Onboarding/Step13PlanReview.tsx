@@ -1,4 +1,5 @@
 import React from 'react';
+import { motion } from 'motion/react';
 import { TransitionPlan } from '../../types';
 import { ShieldCheck, CheckCircle2, Sparkles, Edit3, RefreshCw, ArrowRight, Layers, Video, Clock, Activity, Check } from 'lucide-react';
 
@@ -155,34 +156,40 @@ export const Step13PlanReview: React.FC<Step13Props> = ({
 
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
           {/* FINALIZE PLAN */}
-          <button
+          <motion.button
+            whileHover={{ scale: 1.03 }}
+            whileTap={{ scale: 0.97 }}
             onClick={onFinalize}
             disabled={isLoading}
-            className="w-full sm:w-auto py-3.5 px-6 rounded-xl font-bold uppercase text-xs text-slate-950 bg-gradient-to-r from-emerald-400 to-cyan-300 hover:from-emerald-300 hover:to-cyan-200 shadow-[0_0_15px_rgba(16,185,129,0.3)] transition-all flex items-center justify-center gap-2"
+            className="w-full sm:w-auto py-3.5 px-6 rounded-xl font-bold uppercase text-xs text-slate-950 bg-gradient-to-r from-emerald-400 to-cyan-300 hover:from-emerald-300 hover:to-cyan-200 shadow-[0_0_20px_rgba(16,185,129,0.35)] transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
           >
-            <CheckCircle2 className="w-4 h-4" />
+            <CheckCircle2 className="w-4 h-4 text-slate-950" />
             <span>[ ✓ FINALIZE PLAN ]</span>
-          </button>
+          </motion.button>
 
           {/* MODIFY PLAN */}
-          <button
+          <motion.button
+            whileHover={{ scale: 1.03 }}
+            whileTap={{ scale: 0.97 }}
             onClick={onModify}
             disabled={isLoading}
-            className="w-full sm:w-auto py-3.5 px-6 rounded-xl font-bold uppercase text-xs text-cyan-300 bg-slate-950 border border-cyan-500/40 hover:bg-slate-900 transition-all flex items-center justify-center gap-2"
+            className="w-full sm:w-auto py-3.5 px-6 rounded-xl font-bold uppercase text-xs text-cyan-300 bg-slate-950 border border-cyan-500/40 hover:bg-slate-900 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 shadow-[0_0_12px_rgba(6,182,212,0.15)]"
           >
             <Edit3 className="w-4 h-4 text-cyan-400" />
             <span>[ ✎ MODIFY PLAN ]</span>
-          </button>
+          </motion.button>
 
           {/* REGENERATE */}
-          <button
+          <motion.button
+            whileHover={{ scale: 1.03 }}
+            whileTap={{ scale: 0.97 }}
             onClick={onRegenerate}
             disabled={isLoading}
-            className="w-full sm:w-auto py-3.5 px-6 rounded-xl font-bold uppercase text-xs text-slate-400 bg-slate-950 border border-slate-800 hover:text-slate-200 transition-all flex items-center justify-center gap-2"
+            className="w-full sm:w-auto py-3.5 px-6 rounded-xl font-bold uppercase text-xs text-slate-400 bg-slate-950 border border-slate-800 hover:text-slate-200 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
           >
             <RefreshCw className="w-4 h-4" />
             <span>[ ↻ REGENERATE ]</span>
-          </button>
+          </motion.button>
         </div>
       </div>
     </div>

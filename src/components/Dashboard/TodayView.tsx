@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { motion } from 'motion/react';
 import { CalendarCheck, Clock, CheckSquare, Square, Zap, Sparkles, AlertCircle } from 'lucide-react';
 import { DayTask } from '../../types';
 
@@ -54,20 +55,22 @@ export const TodayView: React.FC<TodayViewProps> = ({
             <label className="text-slate-400 block mb-1">Time Available Today (Hours):</label>
             <div className="flex items-center gap-2">
               {[1, 2, 3, 5].map((h) => (
-                <button
+                <motion.button
                   key={h}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
                   onClick={() => {
                     setTimeAvailableHours(h);
                     setAdapted(false);
                   }}
-                  className={`px-3 py-1.5 rounded-lg border font-bold ${
+                  className={`px-3 py-1.5 rounded-lg border font-bold cursor-pointer ${
                     timeAvailableHours === h
                       ? 'bg-cyan-950 text-cyan-300 border-cyan-400'
                       : 'bg-slate-950 text-slate-400 border-slate-800'
                   }`}
                 >
                   {h} hr{h > 1 ? 's' : ''}
-                </button>
+                </motion.button>
               ))}
             </div>
           </div>
@@ -76,31 +79,35 @@ export const TodayView: React.FC<TodayViewProps> = ({
             <label className="text-slate-400 block mb-1">Energy Level:</label>
             <div className="flex items-center gap-2">
               {(['high', 'medium', 'low'] as const).map((lvl) => (
-                <button
+                <motion.button
                   key={lvl}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
                   onClick={() => {
                     setEnergyLevel(lvl);
                     setAdapted(false);
                   }}
-                  className={`px-3 py-1.5 rounded-lg border font-bold capitalize ${
+                  className={`px-3 py-1.5 rounded-lg border font-bold capitalize cursor-pointer ${
                     energyLevel === lvl
                       ? 'bg-cyan-950 text-cyan-300 border-cyan-400'
                       : 'bg-slate-950 text-slate-400 border-slate-800'
                   }`}
                 >
                   {lvl}
-                </button>
+                </motion.button>
               ))}
             </div>
           </div>
         </div>
 
-        <button
+        <motion.button
+          whileHover={{ scale: 1.03 }}
+          whileTap={{ scale: 0.97 }}
           onClick={handleAdaptToday}
-          className="px-4 py-2 rounded-xl text-xs font-bold uppercase text-slate-950 bg-gradient-to-r from-cyan-400 to-sky-300 hover:from-cyan-300 hover:to-sky-200 transition-all flex items-center gap-1.5"
+          className="px-4 py-2 rounded-xl text-xs font-bold uppercase text-slate-950 bg-gradient-to-r from-cyan-400 to-sky-300 hover:from-cyan-300 hover:to-sky-200 transition-all flex items-center gap-1.5 cursor-pointer shadow-[0_0_12px_rgba(6,182,212,0.2)]"
         >
-          <Sparkles className="w-3.5 h-3.5" /> Re-index Today's Load
-        </button>
+          <Sparkles className="w-3.5 h-3.5 text-slate-950" /> Re-index Today's Load
+        </motion.button>
       </div>
 
       {/* Task Checklist */}

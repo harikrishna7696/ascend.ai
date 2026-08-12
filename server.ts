@@ -317,19 +317,27 @@ async function generateWithActiveModel(opts: {
   }
 
   // Gemini Execution
-  const ai = getAIClient();
-  const genConfig: any = {};
-  if (opts.systemInstruction) {
-    genConfig.systemInstruction = opts.systemInstruction;
+  try {
+    const ai = getAIClient();
+    const genConfig: any = {};
+    if (opts.systemInstruction) {
+      genConfig.systemInstruction = opts.systemInstruction;
+    }
+
+    const response = await ai.models.generateContent({
+      model: activeModel.modelName || 'gemini-3.6-flash',
+      contents: opts.prompt,
+      config: Object.keys(genConfig).length > 0 ? genConfig : undefined,
+    });
+
+    return { text: response.text || '', modelUsed: activeModel };
+  } catch (err: any) {
+    const isQuotaErr = err?.status === 429 || err?.message?.includes('429') || err?.message?.includes('quota');
+    if (isQuotaErr) {
+      console.log('[AETHER Model Engine] Gemini API rate/quota limit reached. Using active local intelligence fallback.');
+    }
+    throw err;
   }
-
-  const response = await ai.models.generateContent({
-    model: activeModel.modelName || 'gemini-3.6-flash',
-    contents: opts.prompt,
-    config: Object.keys(genConfig).length > 0 ? genConfig : undefined,
-  });
-
-  return { text: response.text || '', modelUsed: activeModel };
 }
 
 
@@ -1052,7 +1060,8 @@ Include:
 
         jobs = JSON.parse(response.text || '[]');
       } catch (err: any) {
-        console.warn('[Gemini API Notice] Job search switching to local intelligence fallback due to API quota/limit:', err?.message || err);
+        const isQuotaErr = err?.status === 429 || err?.message?.includes('429') || err?.message?.includes('quota');
+        console.log(`[Job Market Engine] Local intelligence matrix active ${isQuotaErr ? '(Gemini API quota reached)' : ''}`);
         jobs = fallbackSearchJobs(targetRole, primaryDomain, primaryLoc, experienceYears || 3.5);
       }
 
@@ -1340,7 +1349,8 @@ REQUIREMENTS FOR ROADMAP:
 
         planData = JSON.parse(response.text || '{}');
       } catch (err: any) {
-        console.warn('[Gemini API Notice] Plan generation switching to local roadmap generator due to API limit/quota:', err?.message || err);
+        const isQuotaErr = err?.status === 429 || err?.message?.includes('429') || err?.message?.includes('quota');
+        console.log(`[Plan Engine] Local roadmap generator active ${isQuotaErr ? '(Gemini API quota reached)' : ''}`);
         planData = fallbackGeneratePlan(targetRole, prepareDays, skillsToTarget);
       }
 
@@ -1510,7 +1520,8 @@ Instructions:
 
         updatedPlanData = JSON.parse(response.text || '{}');
       } catch (err: any) {
-        console.warn('[Gemini API Notice] Plan modification switching to local modifier due to API quota/limit:', err?.message || err);
+        const isQuotaErr = err?.status === 429 || err?.message?.includes('429') || err?.message?.includes('quota');
+        console.log(`[Plan Engine] Local plan modifier active ${isQuotaErr ? '(Gemini API quota reached)' : ''}`);
         updatedPlanData = JSON.parse(JSON.stringify(currentPlan || fallbackGeneratePlan('Senior Defense CV Engineer', 180, [])));
         if (queryPrompt.toLowerCase().includes('hour') || queryPrompt.toLowerCase().includes('weekend')) {
           updatedPlanData.weeklyLoadHours = 12;

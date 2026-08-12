@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { motion } from 'motion/react';
 import {
   Activity,
   CalendarCheck,
@@ -119,12 +120,14 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 <div className="w-1 h-4 bg-cyan-500"></div>
                 TODAY'S PROTOCOL
               </div>
-              <button
+              <motion.button
+                whileHover={{ x: 3, scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
                 onClick={() => onNavigateTab('today')}
-                className="text-xs text-cyan-400 hover:text-cyan-300 flex items-center gap-1 font-bold"
+                className="text-xs text-cyan-400 hover:text-cyan-300 flex items-center gap-1 font-bold cursor-pointer"
               >
                 Focus Mode <ArrowRight className="w-3.5 h-3.5" />
-              </button>
+              </motion.button>
             </div>
 
             <div className="p-4 rounded-xl bg-white/5 border border-cyan-500/30 text-xs space-y-1.5">
@@ -180,12 +183,14 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 <div className="w-1 h-4 bg-blue-500"></div>
                 CAREER GAP MATRIX
               </div>
-              <button
+              <motion.button
+                whileHover={{ x: 3, scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
                 onClick={() => onNavigateTab('skill_gap')}
-                className="text-xs text-cyan-400 hover:text-cyan-300 flex items-center gap-1 font-bold"
+                className="text-xs text-cyan-400 hover:text-cyan-300 flex items-center gap-1 font-bold cursor-pointer"
               >
                 Full Skill Matrix <ArrowRight className="w-3.5 h-3.5" />
-              </button>
+              </motion.button>
             </div>
 
             <div className="space-y-3.5">
@@ -225,13 +230,15 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 "Analysis of current pace suggests 91% readiness by Day 165. Strategic pivot: Incorporate <strong className="text-white">YOLOv10-TensorRT</strong> benchmarking into this week's project to bypass legacy experience gaps detected in Defense listings."
               </p>
 
-              <button
+              <motion.button
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
                 onClick={() => onNavigateTab('coach')}
-                className="w-full py-2.5 px-3 rounded-xl bg-white/10 border border-white/20 text-xs font-bold uppercase text-white hover:bg-white/20 transition-all flex items-center justify-center gap-1.5"
+                className="w-full py-2.5 px-3 rounded-xl bg-white/10 border border-white/20 text-xs font-bold uppercase text-white hover:bg-white/20 transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-[0_0_12px_rgba(168,85,247,0.2)]"
               >
                 <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
                 Engage Architect AI
-              </button>
+              </motion.button>
             </div>
           </div>
 
@@ -242,12 +249,14 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 <div className="w-1 h-4 bg-purple-400"></div>
                 CONTENT PRODUCTION
               </div>
-              <button
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
                 onClick={() => onNavigateTab('content')}
-                className="text-[11px] text-cyan-400 hover:underline"
+                className="text-[11px] text-cyan-400 hover:underline cursor-pointer"
               >
                 Planner
-              </button>
+              </motion.button>
             </div>
 
             <p className="text-xs font-bold text-gray-200">
@@ -277,12 +286,14 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 <div className="w-1 h-4 bg-emerald-500"></div>
                 MARKET TELEMETRY
               </div>
-              <button
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
                 onClick={() => onNavigateTab('job_market')}
-                className="text-[11px] text-cyan-400 hover:underline"
+                className="text-[11px] text-cyan-400 hover:underline cursor-pointer"
               >
                 Scan Jobs
-              </button>
+              </motion.button>
             </div>
 
             <p className="text-xs text-gray-300 leading-relaxed font-sans">
