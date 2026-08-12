@@ -111,6 +111,16 @@ export function App() {
           setCurrentStep(15);
         }
       });
+
+    // Fetch AI Coach Conversation History
+    fetch('/api/coach/history')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.history && Array.isArray(data.history) && data.history.length > 0) {
+          setChatHistory(data.history);
+        }
+      })
+      .catch((e) => console.log('Coach history notice:', e));
   }, []);
 
   const handleSelectModelFromModal = async (modelId: string) => {
@@ -432,6 +442,7 @@ export function App() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          userMessage: text,
           message: text,
           context: {
             user: userProfile,
@@ -443,16 +454,32 @@ export function App() {
 
       if (res.ok) {
         const data = await res.json();
+        const responseText = data.text || data.response || data.reply || 'AI Coach vector active. Stay focused on your daily transition milestones!';
         const aiMsg: ChatMessage = {
           id: (Date.now() + 1).toString(),
           sender: 'assistant',
-          text: data.response,
+          text: responseText,
+          timestamp: new Date().toISOString(),
+        };
+        setChatHistory((prev) => [...prev, aiMsg]);
+      } else {
+        const aiMsg: ChatMessage = {
+          id: (Date.now() + 1).toString(),
+          sender: 'assistant',
+          text: 'AI Coach active: Keep executing daily roadmap tasks and technical video milestones!',
           timestamp: new Date().toISOString(),
         };
         setChatHistory((prev) => [...prev, aiMsg]);
       }
     } catch (err) {
       console.error('Coach error:', err);
+      const aiMsg: ChatMessage = {
+        id: (Date.now() + 1).toString(),
+        sender: 'assistant',
+        text: 'AI Coach active: Keep executing daily roadmap tasks and technical video milestones!',
+        timestamp: new Date().toISOString(),
+      };
+      setChatHistory((prev) => [...prev, aiMsg]);
     } finally {
       setIsLoading(false);
     }

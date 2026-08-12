@@ -2006,15 +2006,35 @@ Instructions:
     }
   });
 
-  // 10. AI Career Coach Chat
+  // 10. AI Career Coach Chat & History
+  app.get('/api/coach/history', async (req, res) => {
+    try {
+      const db = await getDb();
+      const resStmt = db.exec(`SELECT id, sender, text, timestamp FROM ai_conversations ORDER BY timestamp ASC;`);
+      let history: any[] = [];
+      if (resStmt.length > 0) {
+        history = resStmt[0].values.map((row: any) => ({
+          id: row[0],
+          sender: row[1],
+          text: row[2],
+          timestamp: row[3],
+        }));
+      }
+      res.json({ success: true, history });
+    } catch (err: any) {
+      res.json({ success: true, history: [] });
+    }
+  });
+
   app.post('/api/coach/chat', async (req, res) => {
     try {
-      const { userMessage } = req.body;
+      const userMessage = req.body.userMessage || req.body.message || '';
+      const context = req.body.context || {};
       let coachReply = '';
 
       try {
         const result = await generateWithActiveModel({
-          prompt: userMessage || 'Provide a quick check-in on my career plan.',
+          prompt: `User query: "${userMessage || 'Provide a quick check-in on my career plan.'}"\n\nContext:\nUser Profile: ${JSON.stringify(context.user || {})}\nCareer Target: ${JSON.stringify(context.target || {})}\nActive Plan: ${JSON.stringify(context.plan || {})}`,
           systemInstruction: `You are the AI Career Intelligence Coach for a candidate undergoing a high-stakes 180-day career transition to Defense AI / Computer Vision / Autonomous Systems.
 Your tone is futuristic, direct, highly encouraging, strategic, and tactical.
 Provide actionable technical and career guidance, recommend daily optimizations, help troubleshoot CUDA / ROS2 / Tracking / SLAM problems, and keep the user on track.`,
@@ -2034,20 +2054,33 @@ Provide actionable technical and career guidance, recommend daily optimizations,
         }
       }
 
-      const db = await getDb();
-      db.run(`INSERT INTO ai_conversations (id, sender, text, timestamp) VALUES (?, 'user', ?, ?);`, ['msg_' + Date.now(), userMessage || '', new Date().toISOString()]);
-      db.run(`INSERT INTO ai_conversations (id, sender, text, timestamp) VALUES (?, 'assistant', ?, ?);`, ['msg_' + (Date.now() + 1), coachReply, new Date().toISOString()]);
-      saveDb();
+      if (!coachReply) {
+        coachReply = `Strategic Career Focus: You are making steady progress on your transition to Defense AI Engineering.\n\nTactical Recommendations:\n• Complete your daily protocol tasks in your active roadmap week.\n• Publish your weekly engineering video to demonstrate authority in low-latency C++/CUDA and TensorRT optimizations.\n• Focus on building 1 high-visibility GitHub repo showcasing ROS2 zero-copy stream benchmarks.`;
+      }
+
+      try {
+        const db = await getDb();
+        db.run(`INSERT INTO ai_conversations (id, sender, text, timestamp) VALUES (?, 'user', ?, ?);`, ['msg_' + Date.now(), userMessage || '', new Date().toISOString()]);
+        db.run(`INSERT INTO ai_conversations (id, sender, text, timestamp) VALUES (?, 'assistant', ?, ?);`, ['msg_' + (Date.now() + 1), coachReply, new Date().toISOString()]);
+        saveDb();
+      } catch (dbErr) {
+        console.warn('DB conversation save notice:', dbErr);
+      }
 
       res.json({
         success: true,
         text: coachReply,
+        response: coachReply,
+        reply: coachReply,
       });
     } catch (err: any) {
       console.error('Error in coach chat:', err);
+      const fallbackMsg = 'Your AI Career Coach is active. Keep executing daily roadmap tasks and technical video milestones!';
       res.json({
         success: true,
-        text: 'Your AI Career Coach is active. Keep executing daily roadmap tasks and technical video milestones!',
+        text: fallbackMsg,
+        response: fallbackMsg,
+        reply: fallbackMsg,
       });
     }
   });
