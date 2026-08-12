@@ -187,6 +187,57 @@ async function generateWithActiveModel(opts: {
     throw new Error('Offline Engine requested fallback');
   }
 
+  // Fast connection check for local Ollama to avoid hanging on unreachable localhost inside cloud container
+  if (activeModel.type === 'local_ollama' && (activeModel.baseUrl.includes('localhost') || activeModel.baseUrl.includes('127.0.0.1'))) {
+    const isReachable = await (async () => {
+      try {
+        const cleanBase = activeModel.baseUrl.replace(/\/$/, '');
+        const hostBase = cleanBase.replace(/\/v1$/, '');
+        const testRes = await fetch(`${hostBase}/api/tags`, { signal: AbortSignal.timeout(1500) });
+        return testRes.ok;
+      } catch {
+        return false;
+      }
+    })();
+
+    if (!isReachable) {
+      console.warn(`[AETHER Model Engine] Local Ollama at ${activeModel.baseUrl} is unreachable from cloud backend container.`);
+      if (process.env.GEMINI_API_KEY) {
+        console.log('[AETHER Model Engine] Seamlessly executing request via Gemini 3.6 Flash fallback...');
+        const ai = getAIClient();
+        const genConfig: any = {};
+        if (opts.systemInstruction) {
+          genConfig.systemInstruction = opts.systemInstruction;
+        }
+        const response = await ai.models.generateContent({
+          model: 'gemini-3.6-flash',
+          contents: opts.prompt,
+          config: Object.keys(genConfig).length > 0 ? genConfig : undefined,
+        });
+        return {
+          text: response.text || '',
+          modelUsed: {
+            id: 'gemini-3.6-flash',
+            name: 'Gemini 3.6 Flash (Cloud Auto-Fallback)',
+            provider: 'Google AI Studio',
+            type: 'proprietary',
+            description: 'Google DeepMind high-speed reasoning model',
+            baseUrl: 'https://generativelanguage.googleapis.com',
+            endpointType: 'gemini',
+            apiKeyEnvVar: 'GEMINI_API_KEY',
+            modelName: 'gemini-3.6-flash',
+          },
+        };
+      } else {
+        throw new Error(
+          `Local Ollama at '${activeModel.baseUrl}' is unreachable from the hosted cloud container. ` +
+          `To connect your local Ollama server, expose it via ngrok ('ngrok http 11434') and update your baseUrl in AETHER Settings, ` +
+          `or select 'Gemini 3.6 Flash' or 'Aether Native Offline Engine' in the top header selector.`
+        );
+      }
+    }
+  }
+
   if (activeModel.endpointType === 'openai_compatible') {
     const apiKey = process.env[activeModel.apiKeyEnvVar] || process.env.OPENAI_API_KEY || process.env.TOGETHER_API_KEY || process.env.DEEPSEEK_API_KEY || '';
     if (!apiKey && activeModel.type !== 'local_ollama') {
