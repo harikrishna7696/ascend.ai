@@ -26,9 +26,9 @@ export const Step6JobSummary: React.FC<Step6Props> = ({ jobs, onContinue }) => {
 
       {/* Jobs Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-        {jobs.map((job) => (
+        {jobs.map((job, jobIdx) => (
           <div
-            key={job.id}
+            key={job.id || `job-summary-${jobIdx}`}
             className="p-6 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-4 hover:border-cyan-500/40 transition-all flex flex-col justify-between"
           >
             <div>
@@ -65,7 +65,7 @@ export const Step6JobSummary: React.FC<Step6Props> = ({ jobs, onContinue }) => {
                 <div className="flex flex-wrap gap-1.5">
                   {job.skills.map((skill, idx) => (
                     <span
-                      key={idx}
+                      key={`skill-${job.id || jobIdx}-${idx}-${skill}`}
                       className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] bg-slate-950 text-cyan-300 border border-slate-800"
                     >
                       <CheckCircle2 className="w-3 h-3 text-cyan-400" />
@@ -84,7 +84,7 @@ export const Step6JobSummary: React.FC<Step6Props> = ({ jobs, onContinue }) => {
                   <div className="flex flex-wrap gap-1.5">
                     {job.niceToHaveSkills.map((s, idx) => (
                       <span
-                        key={idx}
+                        key={`nth-${job.id || jobIdx}-${idx}-${s}`}
                         className="px-2 py-0.5 rounded text-[11px] bg-slate-950/60 text-slate-400 border border-slate-800/80"
                       >
                         ○ {s}
@@ -101,7 +101,7 @@ export const Step6JobSummary: React.FC<Step6Props> = ({ jobs, onContinue }) => {
                 </span>
                 <ul className="text-[11px] text-slate-300 space-y-1 pl-2">
                   {job.responsibilities.slice(0, 3).map((r, idx) => (
-                    <li key={idx} className="list-disc list-inside text-slate-400">
+                    <li key={`resp-${job.id || jobIdx}-${idx}`} className="list-disc list-inside text-slate-400">
                       {r}
                     </li>
                   ))}

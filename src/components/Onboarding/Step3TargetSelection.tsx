@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
+import { motion } from 'motion/react';
 import { CareerTarget, UserProfile } from '../../types';
-import { Target, Calendar, Globe, DollarSign, Check, ArrowRight, Sparkles } from 'lucide-react';
+import { Target, Calendar, Globe, DollarSign, Check, ArrowRight, Sparkles, Radio, Search } from 'lucide-react';
 
 interface Step3Props {
   userProfile?: UserProfile | null;
@@ -270,14 +271,43 @@ export const Step3TargetSelection: React.FC<Step3Props> = ({ userProfile, onCont
           </div>
         </div>
 
-        {/* Submit Button */}
-        <button
-          type="submit"
-          className="w-full py-4 px-6 rounded-xl text-sm font-bold uppercase tracking-wider text-slate-950 bg-gradient-to-r from-cyan-400 via-sky-300 to-indigo-300 hover:from-cyan-300 hover:to-indigo-200 shadow-[0_0_20px_rgba(6,182,212,0.3)] transition-all flex items-center justify-center gap-2"
-        >
-          <span>SEARCH REAL JOB MARKET ONLINE</span>
-          <ArrowRight className="w-4 h-4" />
-        </button>
+        {/* Submit Button with High-Tech Web Radar Animation */}
+        <div className="relative pt-4">
+          <motion.button
+            type="submit"
+            whileHover={{ scale: 1.015 }}
+            whileTap={{ scale: 0.985 }}
+            className="relative w-full py-5 px-8 rounded-2xl font-mono text-sm font-extrabold uppercase tracking-wider text-slate-950 bg-gradient-to-r from-cyan-400 via-sky-300 to-indigo-300 hover:from-cyan-300 hover:to-indigo-200 shadow-[0_0_35px_rgba(6,182,212,0.4)] transition-all flex items-center justify-center gap-3 overflow-hidden cursor-pointer group"
+          >
+            {/* Animated Laser Shimmer Beam */}
+            <motion.div
+              className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -skew-x-12"
+              animate={{ x: ['-100%', '200%'] }}
+              transition={{ repeat: Infinity, duration: 2.5, ease: 'easeInOut' }}
+            />
+
+            <div className="relative z-10 flex items-center gap-2.5">
+              <div className="relative flex items-center justify-center">
+                <Radio className="w-5 h-5 text-slate-950 animate-pulse" />
+                <span className="absolute inline-flex h-full w-full rounded-full bg-cyan-900 opacity-75 animate-ping"></span>
+              </div>
+              <span className="tracking-widest">SEARCH REAL JOB MARKET ONLINE</span>
+            </div>
+
+            <motion.div
+              animate={{ x: [0, 5, 0] }}
+              transition={{ repeat: Infinity, duration: 1.2 }}
+              className="relative z-10"
+            >
+              <ArrowRight className="w-5 h-5 text-slate-950" />
+            </motion.div>
+          </motion.button>
+          
+          <p className="text-[11px] text-center text-slate-500 mt-2 font-mono flex items-center justify-center gap-1.5">
+            <Search className="w-3.5 h-3.5 text-cyan-400" />
+            Queries live web indexes & extracts requirement vectors in real time
+          </p>
+        </div>
       </form>
     </div>
   );
