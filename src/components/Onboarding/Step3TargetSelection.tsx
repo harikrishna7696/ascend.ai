@@ -1,19 +1,25 @@
 import React, { useState } from 'react';
-import { CareerTarget } from '../../types';
+import { CareerTarget, UserProfile } from '../../types';
 import { Target, Calendar, Globe, DollarSign, Check, ArrowRight, Sparkles } from 'lucide-react';
 
 interface Step3Props {
+  userProfile?: UserProfile | null;
   onContinue: (target: CareerTarget) => void;
 }
 
-export const Step3TargetSelection: React.FC<Step3Props> = ({ onContinue }) => {
+export const Step3TargetSelection: React.FC<Step3Props> = ({ userProfile, onContinue }) => {
+  const defaultDomain = userProfile?.primaryDomain || '';
   const [daysToPrepare, setDaysToPrepare] = useState<number>(180);
   const [customDays, setCustomDays] = useState<string>('');
-  const [selectedDomains, setSelectedDomains] = useState<string[]>(['Defense', 'Computer Vision']);
-  const [targetRole, setTargetRole] = useState<string>('Senior Computer Vision Engineer');
+  const [selectedDomains, setSelectedDomains] = useState<string[]>(
+    defaultDomain ? [defaultDomain] : []
+  );
+  const [targetRole, setTargetRole] = useState<string>(
+    userProfile?.primaryDomain ? `${userProfile.primaryDomain} Engineer` : ''
+  );
   const [customRole, setCustomRole] = useState<string>('');
-  const [selectedLocations, setSelectedLocations] = useState<string[]>(['Hyderabad', 'India', 'Remote']);
-  const [targetSalary, setTargetSalary] = useState<string>('$120,000 - $160,000');
+  const [selectedLocations, setSelectedLocations] = useState<string[]>(['Remote']);
+  const [targetSalary, setTargetSalary] = useState<string>('$100,000 - $150,000');
 
   const daysOptions = [30, 60, 90, 120, 180, 365];
 
@@ -78,11 +84,13 @@ export const Step3TargetSelection: React.FC<Step3Props> = ({ onContinue }) => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const finalDays = customDays ? parseInt(customDays) || 180 : daysToPrepare;
-    const finalRole = customRole.trim() ? customRole.trim() : targetRole;
+    const finalRole = customRole.trim()
+      ? customRole.trim()
+      : targetRole || (selectedDomains[0] ? `${selectedDomains[0]} Engineer` : 'Software / AI Engineer');
 
     onContinue({
       daysToPrepare: finalDays,
-      targetDomains: selectedDomains.length > 0 ? selectedDomains : ['Defense'],
+      targetDomains: selectedDomains.length > 0 ? selectedDomains : ['Software Engineering'],
       targetRole: finalRole,
       locations: selectedLocations.length > 0 ? selectedLocations : ['Remote'],
       targetSalary,

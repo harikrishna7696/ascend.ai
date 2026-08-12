@@ -85,20 +85,31 @@ export function App() {
     fetch('/api/dashboard/data?userId=1')
       .then((res) => res.json())
       .then((data) => {
-        if (data && data.plan) {
-          setUserProfile(data.user);
-          setCareerTarget(data.target);
-          setCurrentPlan(data.plan);
-          setJobs(data.jobs || []);
-          setSkills(data.skills || []);
-          setTodayTasks(data.todayTasks || []);
+        const loadedPlan = data.plan || data.activePlan;
+        if (data && loadedPlan) {
+          if (data.user || data.profile) setUserProfile(data.user || data.profile);
+          if (data.target) setCareerTarget(data.target);
+          setCurrentPlan(loadedPlan);
+          if (data.jobs) setJobs(data.jobs);
+          if (data.skills) setSkills(data.skills);
+          setTodayTasks(data.todayTasks || data.tasks || []);
           setContentCalendar(data.contentCalendar || []);
           setPlanVersions(data.planVersions || []);
+          localStorage.setItem('aether_has_finalized_plan', 'true');
           setCurrentStep(15); // Directly open Command Center Dashboard!
+        } else {
+          const localFinalized = localStorage.getItem('aether_has_finalized_plan');
+          if (localFinalized === 'true') {
+            setCurrentStep(15);
+          }
         }
       })
       .catch((err) => {
         console.log('No existing plan found or new session:', err);
+        const localFinalized = localStorage.getItem('aether_has_finalized_plan');
+        if (localFinalized === 'true') {
+          setCurrentStep(15);
+        }
       });
   }, []);
 
@@ -183,7 +194,7 @@ export function App() {
       setJobs(data.jobs || []);
       const rawIntel = data.marketIntelligence || {};
       setMarketIntel({
-        targetRole: rawIntel.targetRole || target.targetRole || 'Senior Defense CV Engineer',
+        targetRole: rawIntel.targetRole || target.targetRole || 'Software / AI Engineer',
         jobsAnalyzedCount: rawIntel.jobsAnalyzedCount || (data.jobs ? data.jobs.length : 4),
         skillDemand: Array.isArray(rawIntel.skillDemand) && rawIntel.skillDemand.length > 0
           ? rawIntel.skillDemand
@@ -317,10 +328,12 @@ export function App() {
         body: JSON.stringify({ userId: 1, plan: currentPlan }),
       });
 
+      localStorage.setItem('aether_has_finalized_plan', 'true');
       setCurrentStep(15); // Enter Main Command Center!
       setActiveTab('dashboard');
     } catch (err: any) {
       console.error('Error finalizing plan:', err);
+      localStorage.setItem('aether_has_finalized_plan', 'true');
       setCurrentStep(15);
     } finally {
       setIsLoading(false);
@@ -331,6 +344,7 @@ export function App() {
   const handleResetData = async () => {
     if (window.confirm('Are you sure you want to reset all data and restart onboarding?')) {
       await fetch('/api/reset', { method: 'POST' });
+      localStorage.removeItem('aether_has_finalized_plan');
       setUserProfile(null);
       setCareerTarget(null);
       setMarketIntel(null);
@@ -406,7 +420,7 @@ export function App() {
       {/* Main Header */}
       <Header
         appName="AI CAREER TRANSITION PLATFORM"
-        targetRole={careerTarget?.targetRole || 'Defense AI Engineer'}
+        targetRole={careerTarget?.targetRole || 'AI / Software Engineer'}
         readinessPercentage={currentPlan?.projectedReadinessPercentage || 62}
         planVersionNumber={currentPlan?.version || 1}
         isDashboardActive={currentStep === 15}
@@ -445,7 +459,7 @@ export function App() {
           )}
 
           {currentStep === 3 && (
-            <Step3TargetSelection onContinue={handleTargetSelection} />
+            <Step3TargetSelection userProfile={userProfile} onContinue={handleTargetSelection} />
           )}
 
           {currentStep === 4 && careerTarget && (
@@ -541,8 +555,8 @@ export function App() {
                 todayTasks={todayTasks}
                 onToggleTask={handleToggleTask}
                 onNavigateTab={setActiveTab}
-                targetRole={careerTarget?.targetRole || 'Defense AI Engineer'}
-                currentRole={userProfile?.primaryDomain || 'Computer Vision Engineer'}
+                targetRole={careerTarget?.targetRole || 'AI / Software Engineer'}
+                currentRole={userProfile?.primaryDomain || 'Software Engineer'}
                 currentReadiness={currentPlan?.projectedReadinessPercentage || 62}
               />
             )}
@@ -558,7 +572,7 @@ export function App() {
             {activeTab === 'job_market' && (
               <JobMarketView
                 jobs={jobs}
-                targetRole={careerTarget?.targetRole || 'Defense AI Engineer'}
+                targetRole={careerTarget?.targetRole || 'AI / Software Engineer'}
               />
             )}
 

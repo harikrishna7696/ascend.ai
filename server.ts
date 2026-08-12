@@ -1578,12 +1578,30 @@ Instructions:
     try {
       const { versionId, plan, planData } = req.body;
       const activePlanData = planData || plan;
+      const targetVersionId = versionId || activePlanData?.id || activePlanData?.versionId;
       const db = await getDb();
 
       // Deactivate all previous versions
       db.run(`UPDATE plan_versions SET is_active = 0;`);
-      if (versionId) {
-        db.run(`UPDATE plan_versions SET is_active = 1 WHERE id = ?;`, [versionId]);
+      if (targetVersionId) {
+        db.run(`UPDATE plan_versions SET is_active = 1 WHERE id = ?;`, [targetVersionId]);
+      }
+
+      // Verify that at least one plan_versions row is marked active
+      const activeCheck = db.exec(`SELECT id FROM plan_versions WHERE is_active = 1;`);
+      if (activeCheck.length === 0 || !activeCheck[0].values || activeCheck[0].values.length === 0) {
+        const latestV = db.exec(`SELECT id FROM plan_versions ORDER BY version_number DESC LIMIT 1;`);
+        if (latestV.length > 0 && latestV[0].values && latestV[0].values[0]) {
+          const latestId = latestV[0].values[0][0];
+          db.run(`UPDATE plan_versions SET is_active = 1 WHERE id = ?;`, [latestId]);
+        } else if (activePlanData) {
+          const newVerId = 'v_final_' + Date.now();
+          db.run(
+            `INSERT INTO plan_versions (id, version_number, title, changes_summary, plan_json, is_active, created_at)
+             VALUES (?, 1, 'Finalized Transition Plan', 'Finalized career roadmap locked in database', ?, 1, ?);`,
+            [newVerId, JSON.stringify(activePlanData), new Date().toISOString()]
+          );
+        }
       }
 
       const roadmapId = 'rm_' + Date.now();
@@ -1597,8 +1615,8 @@ Instructions:
          VALUES (?, ?, ?, ?, ?, ?, ?, 1, ?);`,
         [
           roadmapId,
-          versionId || 'v_final',
-          activePlanData?.targetRole || 'Senior Defense CV Engineer',
+          targetVersionId || 'v_final',
+          activePlanData?.targetRole || 'Software / AI Engineer',
           activePlanData?.preparationDays || 180,
           activePlanData?.currentReadinessPercentage || 62,
           activePlanData?.projectedReadinessPercentage || 91,
@@ -1685,7 +1703,7 @@ Instructions:
     try {
       const db = await getDb();
 
-      const planRows = db.exec(`SELECT * FROM plan_versions WHERE is_active = 1 ORDER BY created_at DESC LIMIT 1;`);
+      let planRows = db.exec(`SELECT * FROM plan_versions WHERE is_active = 1 ORDER BY created_at DESC LIMIT 1;`);
       let activePlan: any = null;
       let planVersionsList: any[] = [];
 
@@ -1699,6 +1717,16 @@ Instructions:
           planData: JSON.parse(row[4] || '{}'),
           createdAt: row[5],
         }));
+      }
+
+      if (planRows.length === 0 || !planRows[0].values || planRows[0].values.length === 0) {
+        const fallbackV = db.exec(`SELECT * FROM plan_versions ORDER BY version_number DESC, created_at DESC LIMIT 1;`);
+        if (fallbackV.length > 0 && fallbackV[0].values && fallbackV[0].values[0]) {
+          planRows = fallbackV;
+          const fallbackId = fallbackV[0].values[0][0];
+          db.run(`UPDATE plan_versions SET is_active = 1 WHERE id = ?;`, [fallbackId]);
+          saveDb();
+        }
       }
 
       if (planRows.length > 0 && planRows[0].values && planRows[0].values[0]) {
@@ -1769,7 +1797,7 @@ Instructions:
       // Profile & Target
       const profRows = db.exec(`SELECT name, experience_years, primary_domain, strong_skills, experience_highlights FROM user_profile LIMIT 1;`);
       let profile: any = {
-        name: 'John Doe',
+        name: 'Candidate',
         experienceYears: 3.5,
         primaryDomain: 'Computer Vision',
         strongSkills: ['Python', 'C++', 'PyTorch', 'YOLO', 'TensorRT', 'Docker'],
@@ -1778,7 +1806,7 @@ Instructions:
       if (profRows.length > 0 && profRows[0].values && profRows[0].values[0]) {
         const r = profRows[0].values[0];
         profile = {
-          name: r[0] || 'John Doe',
+          name: r[0] || 'Candidate',
           experienceYears: r[1] || 3.5,
           primaryDomain: r[2] || 'Computer Vision',
           strongSkills: JSON.parse(String(r[3] || '[]')),
@@ -1789,29 +1817,33 @@ Instructions:
       const targetRows = db.exec(`SELECT days_to_prepare, target_domains, target_role, locations, target_salary FROM career_targets LIMIT 1;`);
       let target: any = {
         daysToPrepare: 180,
-        targetDomains: ['Defense', 'Computer Vision'],
-        targetRole: 'Defense AI Engineer',
-        locations: ['Hyderabad', 'Remote'],
-        targetSalary: '$120k - $160k',
+        targetDomains: profile?.primaryDomain ? [profile.primaryDomain] : ['Software Engineering'],
+        targetRole: profile?.primaryDomain ? `${profile.primaryDomain} Engineer` : 'Software / AI Engineer',
+        locations: ['Remote'],
+        targetSalary: '$100k - $150k',
       };
       if (targetRows.length > 0 && targetRows[0].values && targetRows[0].values[0]) {
         const r = targetRows[0].values[0];
         target = {
           daysToPrepare: r[0] || 180,
           targetDomains: JSON.parse(String(r[1] || '[]')),
-          targetRole: r[2] || 'Defense AI Engineer',
+          targetRole: r[2] || 'Software / AI Engineer',
           locations: JSON.parse(String(r[3] || '[]')),
           targetSalary: r[4],
         };
       }
 
       res.json({
+        success: true,
         hasFinalizedPlan: !!activePlan,
         activePlan,
+        plan: activePlan,
         planVersions: planVersionsList,
         profile,
+        user: profile,
         target,
         tasks: tasksList,
+        todayTasks: tasksList,
         projects: projectsList,
         contentCalendar: contentList,
         stats: {

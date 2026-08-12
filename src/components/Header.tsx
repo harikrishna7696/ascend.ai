@@ -16,7 +16,7 @@ interface HeaderProps {
 
 export const Header: React.FC<HeaderProps> = ({
   appName,
-  targetRole = 'Defense AI Engineer',
+  targetRole = 'AI / Software Engineer',
   readinessPercentage = 62,
   planVersionNumber = 1,
   isDashboardActive = false,

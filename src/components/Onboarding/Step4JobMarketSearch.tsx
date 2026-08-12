@@ -17,14 +17,14 @@ export const Step4JobMarketSearch: React.FC<Step4Props> = ({
   onSearchComplete,
 }) => {
   const [logs, setLogs] = useState<string[]>([]);
-  const primaryLoc = locations[0] || 'India';
-  const primaryDomain = targetDomains.join(' ');
+  const primaryLoc = locations[0] || 'Remote';
+  const primaryDomain = targetDomains[0] || 'Software Engineering';
 
   const searchQueries = [
     `"${targetRole}" "${primaryDomain}" "${primaryLoc}"`,
-    `"${targetRole}" "Defense" "AI Engineer"`,
-    `"${targetRole}" "Computer Vision" "TensorRT" "ROS2"`,
-    `"${targetRole}" "Autonomous Systems" "Hyderabad"`,
+    `"${targetRole}" "${primaryDomain}" "Senior"`,
+    `"${targetRole}" "Key Skills & Requirements"`,
+    `"${targetRole}" "${locations.slice(0, 2).join(' ')}"`,
   ];
 
   useEffect(() => {
