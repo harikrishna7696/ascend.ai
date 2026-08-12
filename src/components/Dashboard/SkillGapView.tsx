@@ -33,7 +33,7 @@ export const SkillGapView: React.FC<SkillGapViewProps> = ({ skills }) => {
               <div>
                 <h3 className="text-base font-bold text-slate-100">{skill.name}</h3>
                 <span className="text-[10px] text-slate-500 uppercase">
-                  Category: {skill.category.replace('_', ' ')}
+                  Category: {(skill.category || 'core').replace(/_/g, ' ')}
                 </span>
               </div>
               <span className={`px-2.5 py-1 rounded-lg text-xs font-bold border ${
