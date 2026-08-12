@@ -80,7 +80,7 @@ function loadModelConfig(): ModelConfig {
         baseUrl: 'http://localhost:11434/v1',
         endpointType: 'openai_compatible',
         apiKeyEnvVar: 'LOCAL_OLLAMA_KEY',
-        modelName: 'qwen2.5-coder:latest',
+        modelName: 'qwen2.5-coder:7b',
       },
       {
         id: 'llama-3.3-70b',
@@ -139,6 +139,40 @@ function saveModelConfig(config: ModelConfig) {
   }
 }
 
+async function autoDiscoverOllamaModel(baseUrl: string, requestedModelName: string): Promise<string | null> {
+  try {
+    const cleanBase = baseUrl.replace(/\/$/, '');
+    const modelsUrl = cleanBase.endsWith('/v1') ? `${cleanBase}/models` : `${cleanBase}/v1/models`;
+    const res = await fetch(modelsUrl, { signal: AbortSignal.timeout(3000) });
+    if (res.ok) {
+      const data = await res.json();
+      const modelList: string[] = (data.data || []).map((m: any) => m.id).filter(Boolean);
+      if (modelList.length > 0) {
+        const baseRequested = requestedModelName.split(':')[0].toLowerCase();
+        const match = modelList.find((m) => m.toLowerCase().includes(baseRequested) || baseRequested.includes(m.toLowerCase().split(':')[0]))
+                   || modelList[0];
+        return match;
+      }
+    }
+
+    const hostBase = cleanBase.replace(/\/v1$/, '');
+    const tagsRes = await fetch(`${hostBase}/api/tags`, { signal: AbortSignal.timeout(3000) });
+    if (tagsRes.ok) {
+      const tagsData = await tagsRes.json();
+      const tagList: string[] = (tagsData.models || []).map((m: any) => m.name).filter(Boolean);
+      if (tagList.length > 0) {
+        const baseRequested = requestedModelName.split(':')[0].toLowerCase();
+        const match = tagList.find((m) => m.toLowerCase().includes(baseRequested) || baseRequested.includes(m.toLowerCase().split(':')[0]))
+                   || tagList[0];
+        return match;
+      }
+    }
+  } catch (err) {
+    console.error('[AETHER Model Engine] Ollama model auto-discovery error:', err);
+  }
+  return null;
+}
+
 async function generateWithActiveModel(opts: {
   prompt: string;
   systemInstruction?: string;
@@ -185,15 +219,32 @@ async function generateWithActiveModel(opts: {
 
     const url = `${activeModel.baseUrl.replace(/\/$/, '')}/chat/completions`;
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 12000);
+    const timeoutMs = activeModel.type === 'local_ollama' ? 180000 : 60000;
+    const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
     try {
-      const res = await fetch(url, {
+      let res = await fetch(url, {
         method: 'POST',
         headers,
         body: JSON.stringify(payload),
         signal: controller.signal,
       });
+
+      if (!res.ok && activeModel.type === 'local_ollama' && res.status === 404) {
+        console.warn(`[AETHER Model Engine] Ollama model '${payload.model}' returned 404. Attempting auto-discovery...`);
+        const discoveredModel = await autoDiscoverOllamaModel(activeModel.baseUrl, activeModel.modelName);
+        if (discoveredModel && discoveredModel !== payload.model) {
+          console.log(`[AETHER Model Engine] Auto-discovered installed Ollama model tag: '${discoveredModel}'. Retrying request...`);
+          payload.model = discoveredModel;
+          res = await fetch(url, {
+            method: 'POST',
+            headers,
+            body: JSON.stringify(payload),
+            signal: controller.signal,
+          });
+        }
+      }
+
       clearTimeout(timeoutId);
 
       if (!res.ok) {
@@ -203,9 +254,12 @@ async function generateWithActiveModel(opts: {
 
       const data = await res.json();
       const content = data.choices?.[0]?.message?.content || '';
-      return { text: content, modelUsed: activeModel };
-    } catch (fetchErr) {
+      return { text: content, modelUsed: { ...activeModel, modelName: payload.model } };
+    } catch (fetchErr: any) {
       clearTimeout(timeoutId);
+      if (fetchErr.name === 'AbortError') {
+        throw new Error(`Local Ollama inference timed out after ${timeoutMs / 1000}s. Ensure 'ollama serve' is active and model is loaded.`);
+      }
       throw fetchErr;
     }
   }

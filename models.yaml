@@ -48,7 +48,7 @@ models:
     baseUrl: http://localhost:11434/v1
     endpointType: openai_compatible
     apiKeyEnvVar: LOCAL_OLLAMA_KEY
-    modelName: qwen2.5-coder:latest
+    modelName: qwen2.5-coder:7b
   - id: ollama-local-llama3
     name: Ollama Local (Llama 3)
     provider: Local Machine / vLLM
