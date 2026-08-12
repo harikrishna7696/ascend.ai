@@ -4,6 +4,7 @@ import multer from 'multer';
 import dotenv from 'dotenv';
 import fs from 'fs';
 import YAML from 'yaml';
+import { PDFParse } from 'pdf-parse';
 import { createServer as createViteServer } from 'vite';
 import { GoogleGenAI, Type } from '@google/genai';
 import { getDb, saveDb } from './src/db/database.js';
@@ -335,14 +336,60 @@ async function generateWithActiveModel(opts: {
 // --- FALLBACK GENERATORS FOR GUARANTEED FAULT TOLERANCE ---
 
 function fallbackParseResume(resumeText: string, name: string) {
+  if (!resumeText || resumeText.trim().length < 15) {
+    return {
+      experienceYears: 3.5,
+      primaryDomain: 'Computer Vision & Edge AI',
+      strongSkills: ['Python', 'C++', 'PyTorch', 'YOLO', 'Object Detection', 'TensorRT', 'ONNX', 'Docker', 'OpenCV'],
+      experienceHighlights: [
+        'Developed production AI for real-time video analytics handling 200+ camera streams across 40+ operational use cases.',
+        'Optimized edge inference latency with TensorRT and ONNX on NVIDIA Jetson boards.',
+        'Implemented real-time multi-object tracking pipelines with C++ and PyTorch.',
+      ],
+    };
+  }
+
+  const commonSkills = [
+    'Python', 'C++', 'C', 'Java', 'JavaScript', 'TypeScript', 'PyTorch', 'TensorFlow', 'Keras', 'OpenCV',
+    'CUDA', 'TensorRT', 'ONNX', 'ROS', 'ROS2', 'YOLO', 'SLAM', 'Docker', 'Kubernetes', 'Linux', 'Git',
+    'AWS', 'GCP', 'Azure', 'SQL', 'PostgreSQL', 'MongoDB', 'Redis', 'Kafka', 'FFmpeg', 'DeepStream',
+    'Computer Vision', 'NLP', 'Deep Learning', 'Machine Learning', 'MLOps', 'Transformers', 'LLM',
+    'Robotics', 'Embedded C++', 'RTOS', 'System Architecture', 'CI/CD', 'REST API', 'React', 'Node.js'
+  ];
+
+  const textLower = resumeText.toLowerCase();
+  const foundSkills: string[] = [];
+  for (const skill of commonSkills) {
+    if (textLower.includes(skill.toLowerCase())) {
+      foundSkills.push(skill);
+    }
+  }
+
+  let domain = 'Software & AI Engineering';
+  if (textLower.includes('vision') || textLower.includes('opencv') || textLower.includes('yolo') || textLower.includes('tracking')) {
+    domain = 'Computer Vision & Edge AI';
+  } else if (textLower.includes('robotics') || textLower.includes('ros') || textLower.includes('slam')) {
+    domain = 'Robotics & Autonomous Systems';
+  } else if (textLower.includes('embedded') || textLower.includes('rtos') || textLower.includes('cuda')) {
+    domain = 'Embedded Edge Systems';
+  } else if (textLower.includes('data') || textLower.includes('mlops') || textLower.includes('pipeline')) {
+    domain = 'AI Infrastructure & MLOps';
+  }
+
+  const candidateHighlights = resumeText
+    .split(/\r?\n/)
+    .map((l) => l.trim())
+    .filter((l) => l.length > 25 && !l.toLowerCase().includes('http') && !l.includes('@'))
+    .slice(0, 3);
+
   return {
     experienceYears: 3.5,
-    primaryDomain: 'Computer Vision & Edge AI',
-    strongSkills: ['Python', 'C++', 'PyTorch', 'YOLO', 'Object Detection', 'TensorRT', 'ONNX', 'Docker', 'OpenCV'],
-    experienceHighlights: [
-      'Developed production AI for real-time video analytics handling 200+ camera streams across 40+ operational use cases.',
-      'Optimized edge inference latency with TensorRT and ONNX on NVIDIA Jetson boards.',
-      'Implemented real-time multi-object tracking pipelines with C++ and PyTorch.',
+    primaryDomain: domain,
+    strongSkills: foundSkills.length > 0 ? foundSkills : ['Python', 'C++', 'PyTorch', 'Docker', 'Linux', 'OpenCV'],
+    experienceHighlights: candidateHighlights.length > 0 ? candidateHighlights : [
+      `Engineered production software systems using ${foundSkills.slice(0, 3).join(', ') || 'modern engineering toolchains'}.`,
+      'Optimized performance and system architecture for edge deployment.',
+      'Designed and deployed real-time data processing pipelines.'
     ],
   };
 }
@@ -772,12 +819,49 @@ async function startServer() {
   });
 
   // 1. Resume Parsing
-  app.post('/api/resume/parse', upload.single('resumeFile'), async (req, res) => {
+  app.post('/api/resume/parse', upload.any(), async (req, res) => {
     try {
       let resumeText = req.body.resumeText || req.body.rawText || '';
 
+      let fileBuffer: Buffer | null = null;
+      let fileName = '';
+
       if (req.file) {
-        resumeText += '\n' + req.file.buffer.toString('utf-8');
+        fileBuffer = req.file.buffer;
+        fileName = req.file.originalname || '';
+      } else if (req.files && Array.isArray(req.files) && req.files.length > 0) {
+        const uploaded = (req.files as Express.Multer.File[])[0];
+        fileBuffer = uploaded.buffer;
+        fileName = uploaded.originalname || '';
+      }
+
+      if (fileBuffer && fileBuffer.length > 0) {
+        const isPdf =
+          fileName.toLowerCase().endsWith('.pdf') ||
+          fileBuffer.slice(0, 4).toString('ascii') === '%PDF';
+
+        if (isPdf) {
+          try {
+            const parser = new PDFParse({ data: fileBuffer });
+            const pdfData = await parser.getText();
+            if (pdfData && pdfData.text && pdfData.text.trim().length > 0) {
+              resumeText += '\n' + pdfData.text;
+            } else {
+              resumeText += '\n' + fileBuffer.toString('utf-8');
+            }
+            await parser.destroy().catch(() => {});
+          } catch (pdfErr: any) {
+            console.warn('[PDF Parser] Error parsing PDF buffer:', pdfErr?.message || pdfErr);
+            // Clean printable ASCII characters from PDF binary buffer as fallback
+            const cleanText = fileBuffer
+              .toString('latin1')
+              .replace(/[^\x20-\x7E\n\r\t]/g, ' ')
+              .replace(/\s+/g, ' ');
+            resumeText += '\n' + cleanText;
+          }
+        } else {
+          resumeText += '\n' + fileBuffer.toString('utf-8');
+        }
       }
 
       if (!resumeText.trim()) {
@@ -794,40 +878,38 @@ Highlights: Developed production AI for real-time video analytics in airport ope
       let parsed: any = null;
 
       try {
-        const ai = getAIClient();
-        const prompt = `You are an expert technical resume parser for AI and engineering careers.
-Parse the following resume text and extract the exact career details into structured JSON:
+        const prompt = `You are an expert technical resume parser. Parse the following resume text and extract the exact career details into structured JSON:
 
 RESUME TEXT:
-${resumeText}
+${resumeText.slice(0, 4000)}
 
-Extract:
-1. experienceYears: total years of relevant engineering experience (as a number e.g. 3.5)
-2. primaryDomain: main domain expertise (e.g. "Computer Vision & Edge AI")
-3. strongSkills: list of technical skills found in resume
-4. experienceHighlights: bullet points summarizing major engineering achievements and scale`;
+Return ONLY a JSON object with this structure:
+{
+  "experienceYears": number (e.g. 3.5),
+  "primaryDomain": string (e.g. "Computer Vision & Edge AI"),
+  "strongSkills": string[] (list of technical skills),
+  "experienceHighlights": string[] (bullet points summarizing achievements)
+}`;
 
-        const response = await ai.models.generateContent({
-          model: 'gemini-3.6-flash',
-          contents: prompt,
-          config: {
-            responseMimeType: 'application/json',
-            responseSchema: {
-              type: Type.OBJECT,
-              properties: {
-                experienceYears: { type: Type.NUMBER },
-                primaryDomain: { type: Type.STRING },
-                strongSkills: { type: Type.ARRAY, items: { type: Type.STRING } },
-                experienceHighlights: { type: Type.ARRAY, items: { type: Type.STRING } },
-              },
-              required: ['experienceYears', 'primaryDomain', 'strongSkills', 'experienceHighlights'],
-            },
-          },
+        const modelRes = await generateWithActiveModel({
+          prompt,
+          systemInstruction: 'You are a precise technical resume parser. Always return valid JSON only.',
         });
 
-        parsed = JSON.parse(response.text || '{}');
+        let rawText = modelRes.text.trim();
+        if (rawText.startsWith('```json')) {
+          rawText = rawText.replace(/^```json\s*/, '').replace(/\s*```$/, '');
+        } else if (rawText.startsWith('```')) {
+          rawText = rawText.replace(/^```\s*/, '').replace(/\s*```$/, '');
+        }
+
+        parsed = JSON.parse(rawText);
       } catch (err: any) {
-        console.warn('[Gemini API Notice] Resume parsing switching to local fallback due to API limit/quota:', err?.message || err);
+        console.warn('[AETHER Resume Parser] LLM extraction fallback triggered:', err?.message || err);
+        parsed = fallbackParseResume(resumeText, req.body.name || 'Candidate');
+      }
+
+      if (!parsed || !parsed.strongSkills || !Array.isArray(parsed.strongSkills) || parsed.strongSkills.length === 0) {
         parsed = fallbackParseResume(resumeText, req.body.name || 'Candidate');
       }
 
@@ -871,7 +953,7 @@ Extract:
       });
     } catch (err: any) {
       console.error('Error parsing resume:', err);
-      res.status(200).json({
+      res.json({
         success: true,
         profile: fallbackParseResume('', 'Candidate'),
       });

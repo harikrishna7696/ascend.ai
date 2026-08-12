@@ -124,7 +124,10 @@ export function App() {
     setErrorText(null);
     try {
       const formData = new FormData();
-      if (file) formData.append('resume', file);
+      if (file) {
+        formData.append('resumeFile', file);
+        formData.append('resume', file);
+      }
       if (rawText) formData.append('rawText', rawText);
 
       const res = await fetch('/api/resume/parse', {
@@ -132,12 +135,20 @@ export function App() {
         body: formData,
       });
 
-      if (!res.ok) throw new Error('Failed to parse resume');
+      if (!res.ok) {
+        const errJson = await res.json().catch(() => ({}));
+        throw new Error(errJson.error || 'Failed to parse resume document');
+      }
+
       const data = await res.json();
-      setUserProfile(data.profile);
-      setCurrentStep(2); // Move to Step 2
+      if (data.profile) {
+        setUserProfile(data.profile);
+        setCurrentStep(2); // Move to Step 2
+      } else {
+        throw new Error('Unable to extract career profile from resume');
+      }
     } catch (err: any) {
-      setErrorText(err.message || 'Error parsing resume');
+      setErrorText(err.message || 'Error parsing resume document');
     } finally {
       setIsLoading(false);
     }
