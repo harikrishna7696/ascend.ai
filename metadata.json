@@ -1,0 +1,6 @@
+{
+  "name": "Aether AI - Career Intelligence Platform",
+  "description": "Futuristic AI-powered career transition platform analyzing live job markets, skill gap vectors, and generating adaptive 6-month career roadmaps.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
