@@ -276,7 +276,16 @@ export function App() {
       const data = await res.json();
 
       setCurrentPlan(data.plan);
-      setPlanVersions([{ id: 'v1', versionNumber: 1, planData: data.plan }]);
+      setPlanVersions([
+        {
+          id: 'v1',
+          versionNumber: 1,
+          title: 'Initial 180-Day Architecture',
+          changesSummary: 'Initial generated roadmap from resume and target intelligence',
+          planData: data.plan,
+          createdAt: new Date().toISOString(),
+        },
+      ]);
 
       // Populate default tasks & calendar
       if (data.plan && data.plan.months) {
@@ -700,6 +709,7 @@ export function App() {
                 chatHistory={chatHistory}
                 onSendMessage={handleSendMessageToCoach}
                 isLoading={isLoading}
+                onClearHistory={() => setChatHistory([])}
               />
             )}
 

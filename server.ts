@@ -2026,6 +2026,17 @@ Instructions:
     }
   });
 
+  app.post('/api/coach/clear', async (req, res) => {
+    try {
+      const db = await getDb();
+      db.run(`DELETE FROM ai_conversations;`);
+      saveDb();
+      res.json({ success: true, message: 'Conversation history cleared' });
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
   app.post('/api/coach/chat', async (req, res) => {
     try {
       const userMessage = req.body.userMessage || req.body.message || '';
@@ -2034,28 +2045,146 @@ Instructions:
 
       try {
         const result = await generateWithActiveModel({
-          prompt: `User query: "${userMessage || 'Provide a quick check-in on my career plan.'}"\n\nContext:\nUser Profile: ${JSON.stringify(context.user || {})}\nCareer Target: ${JSON.stringify(context.target || {})}\nActive Plan: ${JSON.stringify(context.plan || {})}`,
-          systemInstruction: `You are the AI Career Intelligence Coach for a candidate undergoing a high-stakes 180-day career transition to Defense AI / Computer Vision / Autonomous Systems.
-Your tone is futuristic, direct, highly encouraging, strategic, and tactical.
-Provide actionable technical and career guidance, recommend daily optimizations, help troubleshoot CUDA / ROS2 / Tracking / SLAM problems, and keep the user on track.`,
+          prompt: `User query: "${userMessage || 'Provide a strategic check-in on my career plan.'}"\n\nCandidate Transition Profile:\n${JSON.stringify(context.user || {})}\nTarget Career Role:\n${JSON.stringify(context.target || {})}\nActive 180-Day Plan:\n${JSON.stringify(context.plan || {})}`,
+          systemInstruction: `You are the AI Career Intelligence Coach for an engineer executing a high-stakes career transition to Defense AI, Computer Vision, and Autonomous Systems.
+
+CRITICAL FORMATTING DIRECTIVES:
+1. Format your entire response using clean, structured, and legible Markdown.
+2. Structure your briefing using distinct Markdown headings:
+   ### 🎯 Strategic Directive
+   ### ⚡ Technical Execution & Architecture
+   ### 📋 Tactical Action Items
+   ### 🚀 Portfolio & Interview Edge
+3. Use fenced code blocks with language identifiers (e.g. \`\`\`cpp, \`\`\`python, \`\`\`bash) for any commands, kernel snippets, or architectural configs.
+4. Keep paragraphs concise, punchy, and highly readable with clean spacing. Use bulleted lists for multi-point steps.
+5. Provide concrete, battle-tested advice on CUDA memory streams, TensorRT engine quantization, ROS2 zero-copy communication, multi-object tracking (ByteTrack/DeepSORT), SLAM, and defense hiring clearance/technical positioning.`,
         });
         coachReply = result.text || '';
       } catch (err: any) {
         console.warn('[Model Engine Notice] Coach chat switching to local intelligence fallback:', err?.message || err);
         const msgLower = (userMessage || '').toLowerCase();
-        if (msgLower.includes('cuda') || msgLower.includes('gpu')) {
-          coachReply = `To eliminate PCIe bus bottlenecks in real-time CUDA stream processing:\n1. Allocate pinned host memory via \`cudaHostAlloc\` instead of standard pageable memory (\`malloc\`) to achieve max PCIe transfer bandwidth.\n2. Utilize non-blocking asynchronous stream queues (\`cudaStreamCreateWithFlags\`) so host-to-device memory copies overlap with GPU kernel execution.\n3. Profile memory transfer latency using NVIDIA Nsight Systems (\`nsys profile\`).`;
-        } else if (msgLower.includes('ros') || msgLower.includes('ros2')) {
-          coachReply = `For ROS2 real-time node optimization in defense edge payloads:\n1. Use Zero-Copy transport (\`rclcpp::loaned_message\`) via Shared Memory (cyclonedds/fastdds) to bypass interprocess serialization overhead.\n2. Set Quality of Service (QoS) reliability to \`BEST_EFFORT\` for high-rate video feeds.\n3. Utilize Lifecycle nodes to cleanly allocate GPU memory upon node activation.`;
-        } else if (msgLower.includes('tracking') || msgLower.includes('slam')) {
-          coachReply = `For tactical multi-object tracking and SLAM:\n1. Couple TensorRT-accelerated YOLO detectors with ByteTrack or DeepSORT for ID retention under occlusion.\n2. Apply Kalman Filtering with constant velocity motion models for target trajectory prediction.\n3. Benchmark ORB-SLAM3 on GPU for GPS-denied autonomous navigation.`;
+        if (msgLower.includes('cuda') || msgLower.includes('gpu') || msgLower.includes('pcie') || msgLower.includes('memory')) {
+          coachReply = `### 🎯 Strategic Directive
+Eliminate PCIe transfer bottlenecks in real-time CUDA streaming pipelines to ensure deterministic sub-15ms defense edge latency.
+
+### ⚡ Technical Execution & Architecture
+1. **Pinned Host Memory Allocation**:
+\`\`\`cpp
+// Replace pageable malloc with pinned host memory for direct DMA bandwidth
+float* h_pinned_buffer;
+cudaHostAlloc((void**)&h_pinned_buffer, image_bytes, cudaHostAllocDefault);
+\`\`\`
+
+2. **Asynchronous Stream Overlapping**:
+\`\`\`cpp
+cudaStream_t stream_compute, stream_dma;
+cudaStreamCreateWithFlags(&stream_compute, cudaStreamNonBlocking);
+cudaStreamCreateWithFlags(&stream_dma, cudaStreamNonBlocking);
+
+// Asynchronously transfer next frame while GPU processes current frame
+cudaMemcpyAsync(d_input, h_pinned_buffer, bytes, cudaMemcpyHostToDevice, stream_dma);
+\`\`\`
+
+### 📋 Tactical Action Items
+- Run NVIDIA Nsight Systems (\`nsys profile -t cuda,nvtx -o profile_report ./pipeline_exec\`) to visually verify memory copy and kernel execution concurrency.
+- Quantize TensorRT execution engines to **FP16 / INT8 with calibration caches** for Jetson AGX Orin deployment.
+
+### 🚀 Portfolio & Interview Edge
+Highlight this in your GitHub repository and resume: *"Engineered zero-copy pinned DMA buffers and asynchronous CUDA streams, eliminating a 18ms PCIe transfer bottleneck for 60 FPS multi-camera payloads."*`;
+        } else if (msgLower.includes('ros') || msgLower.includes('ros2') || msgLower.includes('publisher') || msgLower.includes('dds')) {
+          coachReply = `### 🎯 Strategic Directive
+Convert legacy serialized ROS nodes into high-performance zero-copy shared memory IPC architectures for defense robotics and autonomous payloads.
+
+### ⚡ Technical Execution & Architecture
+1. **Zero-Copy Loaned Messages**:
+\`\`\`cpp
+#include <rclcpp/rclcpp.hpp>
+#include <sensor_msgs/msg/image.hpp>
+
+// Loan message memory directly from Shared Memory (CycloneDDS / FastDDS)
+auto loaned_msg = image_pub_->borrow_loaned_message();
+populate_sensor_frame(loaned_msg.get());
+image_pub_->publish(std::move(loaned_msg));
+\`\`\`
+
+2. **Tactical QoS Profile**:
+\`\`\`cpp
+rclcpp::QoS qos_profile(rclcpp::KeepLast(1));
+qos_profile.best_effort(); // Drop stale frames in lossy RF links
+qos_profile.durability_volatile();
+\`\`\`
+
+### 📋 Tactical Action Items
+- Configure \`CYCLONEDDS_URI\` with shared memory transport (\`iceoryx\`) to bypass interprocess socket serialization.
+- Implement ROS2 Lifecycle nodes to guarantee GPU buffers are pre-allocated during configuration rather than inside real-time control loops.
+
+### 🚀 Portfolio & Interview Edge
+In defense interviews, emphasize how zero-copy IPC drops end-to-end sensor-to-actuation latency from 45ms to under 4ms under high sensor load.`;
+        } else if (msgLower.includes('tracking') || msgLower.includes('slam') || msgLower.includes('yolo') || msgLower.includes('tensorrt')) {
+          coachReply = `### 🎯 Strategic Directive
+Deploy low-latency object detection and trajectory estimation resilient to GPS-denied environments and optical occlusions.
+
+### ⚡ Technical Execution & Architecture
+1. **Detection & Association Pipeline**:
+\`\`\`bash
+# Build TensorRT engine with FP16 precision for edge accelerator
+trtexec --onnx=yolov10x.onnx --saveEngine=yolov10x_fp16.engine --fp16 --workspace=4096
+\`\`\`
+
+2. **Occlusion Handling via Kalman Filter**:
+- Couple detections with **ByteTrack** for high-frame-rate association without heavy appearance descriptor overhead.
+- Utilize an 8-state Extended Kalman Filter (EKF) with constant velocity assumptions for drone/missile trajectory projection.
+
+### 📋 Tactical Action Items
+- Benchmark ORB-SLAM3 on stereo/IMU configurations for drift-free feature tracking.
+- Test failure recovery and re-identification under sudden 90-degree camera yaw rotations.
+
+### 🚀 Portfolio & Interview Edge
+Add benchmark metrics to your portfolio: *"Achieved 98.4% MOTA tracking accuracy across 4 simultaneous 4K streams on embedded Jetson hardware at 120 FPS."*`;
+        } else if (msgLower.includes('resume') || msgLower.includes('interview') || msgLower.includes('pitch') || msgLower.includes('position')) {
+          coachReply = `### 🎯 Strategic Directive
+Pivot your background narrative from "General Computer Vision Developer" to "High-Performance Edge AI & Autonomous Systems Engineer".
+
+### ⚡ Technical Execution & Architecture
+Structure your resume impact bullets around **SWaP-C (Size, Weight, Power, and Cost)** constraints, deterministic latency, and hardware acceleration:
+
+- **Before (Weak)**: *"Trained YOLO models and ran OpenCV scripts for object detection."*
+- **After (Defense Ready)**: *"Engineered end-to-end C++/CUDA multi-camera inference pipeline using TensorRT FP16 quantization, achieving sub-10ms deterministic latency on Jetson Orin edge compute modules."*
+
+### 📋 Tactical Action Items
+1. **Lead with Systems Skills**: Feature C++20, CUDA, TensorRT, ROS2, and Linux kernel profiling at the top of your technical matrix.
+2. **Publish 1 Technical Demo Video**: Showcase a side-by-side terminal latency benchmark with Nsight Systems profiling.
+3. **Target Prime Contractors**: Focus applications on defense tech innovators (Anduril, Shield AI, Skydio, Lockheed Martin, General Atomics).
+
+### 🚀 Portfolio & Interview Edge
+Be prepared for deep-dive questions on memory alignment, cache misses, PCIe bandwidth limits, and DDS reliability protocols.`;
         } else {
-          coachReply = `Strategic Career Focus: You are making steady progress on your transition to Defense AI Engineering.\n\nTactical Recommendations:\n• Complete your daily protocol tasks in your active roadmap week.\n• Publish your weekly engineering video to demonstrate authority in low-latency C++/CUDA and TensorRT optimizations.\n• Focus on building 1 high-visibility GitHub repo showcasing ROS2 zero-copy stream benchmarks.`;
+          coachReply = `### 🎯 Strategic Directive
+Execute the current milestone of your 180-day defense career transition with focus on systems-level C++, CUDA concurrency, and edge acceleration.
+
+### ⚡ Technical Execution & Architecture
+- **Daily Focus**: Complete your programmed protocol tasks for the current roadmap week.
+- **Artifact Creation**: Every week of study should produce either a reproducible GitHub benchmark or a 2-minute architectural explanation video.
+- **Hardware Realism**: Test all algorithms against embedded constraints (limited thermal envelopes, PCIe transfer bounds, real-time deterministic loops).
+
+### 📋 Tactical Action Items
+1. Verify today's protocol tasks in the **Today's Protocol** tab.
+2. Ensure your active project repository includes a clean \`README.md\` with latency benchmarks and hardware specs.
+3. Schedule your weekly LinkedIn / YouTube technical post on low-latency autonomous pipelines.
+
+### 🚀 Portfolio & Interview Edge
+Consistent public demonstration of low-level C++/CUDA competency bypasses standard resume filtering and directly attracts hiring managers looking for mission-critical engineering depth.`;
         }
       }
 
       if (!coachReply) {
-        coachReply = `Strategic Career Focus: You are making steady progress on your transition to Defense AI Engineering.\n\nTactical Recommendations:\n• Complete your daily protocol tasks in your active roadmap week.\n• Publish your weekly engineering video to demonstrate authority in low-latency C++/CUDA and TensorRT optimizations.\n• Focus on building 1 high-visibility GitHub repo showcasing ROS2 zero-copy stream benchmarks.`;
+        coachReply = `### 🎯 Strategic Directive
+Execute your defense transition roadmap with focus on high-performance C++, CUDA concurrency, and edge acceleration.
+
+### 📋 Tactical Action Items
+• Complete your daily protocol tasks in your active roadmap week.
+• Publish your weekly engineering video demonstrating low-latency C++/CUDA optimizations.
+• Focus on building 1 high-visibility GitHub repo showcasing ROS2 zero-copy stream benchmarks.`;
       }
 
       try {

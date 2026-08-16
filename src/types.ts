@@ -89,21 +89,37 @@ export interface DayTask {
   type: 'learn' | 'implement' | 'practice' | 'document' | 'publish';
   completed: boolean;
   estimatedMinutes: number;
+  description?: string;
+}
+
+export interface DayScheduleItem {
+  id?: string;
+  dayNumber: number;
+  title: string;
+  focusArea?: string;
+  tasks?: DayTask[];
 }
 
 export interface WeekPlan {
+  id?: string;
   weekNumber: number;
   title: string;
+  theme?: string;
   focusSkill: string;
+  targetSkill?: string;
   learningTopic: string;
   videoIdea: string;
   tasks: DayTask[];
+  days?: DayScheduleItem[];
 }
 
 export interface MonthPlan {
+  id?: string;
   monthNumber: number;
   title: string;
   theme: string;
+  primaryGoal?: string;
+  description?: string;
   focusSkills: string[];
   weeks: WeekPlan[];
 }
@@ -126,6 +142,7 @@ export interface ProjectItem {
   resumeValue: string;
   portfolioValue: string;
   interviewValue: string;
+  status?: string;
 }
 
 export interface ContentItem {
